@@ -1,6 +1,7 @@
-﻿export const environment = {
+export const environment = {
   production: false,
   enableHttpLogs: true,
+  publicSiteUrl: 'http://localhost:4200',
 
   app: {
     name: 'Brevi Store',
@@ -14,5 +15,10 @@
   features: {
     home: true,
     catalog: true,
+  },
+  logging: {
+    enabled: false,
+    endpoint: null,
+    sampleRate: 1,
   },
 };

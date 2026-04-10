@@ -1,6 +1,7 @@
-﻿export const environment = {
+export const environment = {
   production: true,
   enableHttpLogs: false,
+  publicSiteUrl: 'https://brevi.com.ua',
 
   app: {
     name: 'Brevi Store',
@@ -18,6 +19,7 @@
   },
   logging: {
     enabled: true,
-    level: 'debug',
+    endpoint: null,
+    sampleRate: 1,
   },
 };

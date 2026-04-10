@@ -18,6 +18,7 @@
       "@shared/http": ["libs/shared/http/src/index.ts"],
       "@shared/logging": ["libs/shared/logging/src/index.ts"],
       "@storefront/ui": ["libs/storefront/ui/src/index.ts"],
+      "@storefront/shell": ["libs/storefront/shell/src/index.ts"],
       "@storefront/data-access": ["libs/storefront/data-access/src/index.ts"],
       "@storefront/util": ["libs/storefront/util/src/index.ts"],
       "@storefront/feature/home": ["libs/storefront/feature/home/src/index.ts"],
@@ -27,6 +28,9 @@
       "@storefront/feature/about-us": ["libs/storefront/feature/about-us/src/index.ts"],
       "@storefront/feature/order-in-bulk": [
         "libs/storefront/feature/order-in-bulk/order-in-bulk/src/index.ts"
+      ],
+      "@storefront/feature/not-found": [
+        "libs/storefront/feature/not-found/src/index.ts"
       ],
       "@storefront/feature/regions": ["libs/storefront/feature/regions/regions/src/index.ts"],
       "@shared/theme": ["libs/shared/theme/src/index.ts"],

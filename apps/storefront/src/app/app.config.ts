@@ -1,46 +1,58 @@
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, ErrorHandler } from '@angular/core';
+import {
+  provideHttpClient,
+  withFetch,
+  withInterceptors,
+} from '@angular/common/http';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import {
   provideClientHydration,
   withEventReplay,
+  withHttpTransferCacheOptions,
   withIncrementalHydration,
 } from '@angular/platform-browser';
-import { provideRouter } from '@angular/router';
-import { baseUrlInterceptor, errorInterceptor, loggingInterceptor, API_URL } from '@shared/http';
+import {
+  provideRouter,
+  withComponentInputBinding,
+  withInMemoryScrolling,
+} from '@angular/router';
+import { provideApiAndLogging, provideGlobalErrorHandling } from '@shared/config';
+import {
+  baseUrlInterceptor,
+  errorInterceptor,
+  loggingInterceptor,
+} from '@shared/http';
 import { BreviStorePreset } from '@shared/theme';
-import { GlobalErrorHandler } from '@shared/ui';
-import { MessageService } from 'primeng/api';
+import { createPrimeNgConfig } from '@shared/ui';
 import { providePrimeNG } from 'primeng/config';
 
 import { appRoutes } from './app.routes';
+import { TRANSLOCO_PROVIDERS } from './localization/transloco.providers';
 import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    { provide: API_URL, useValue: environment.api.baseUrl },
-    provideHttpClient(withInterceptors([baseUrlInterceptor, loggingInterceptor, errorInterceptor])),
+    ...provideApiAndLogging(environment),
+    provideHttpClient(
+      withFetch(),
+      withInterceptors([baseUrlInterceptor, loggingInterceptor, errorInterceptor]),
+    ),
     provideBrowserGlobalErrorListeners(),
-    provideRouter(appRoutes),
-    provideClientHydration(withEventReplay(), withIncrementalHydration()),
-    MessageService,
-    { provide: ErrorHandler, useClass: GlobalErrorHandler },
-    providePrimeNG({
-      theme: {
-        preset: BreviStorePreset,
-        options: {
-          prefix: 'p',
-          darkModeSelector: '.my-app-dark',
-          cssLayer: false,
-        },
-      },
-      ripple: true,
-      inputVariant: 'filled',
-      zIndex: {
-        modal: 1100,
-        overlay: 1000,
-        menu: 1000,
-        tooltip: 1100,
-      },
-    }),
+    provideRouter(
+      appRoutes,
+      withInMemoryScrolling({
+        scrollPositionRestoration: 'enabled',
+      }),
+      withComponentInputBinding(),
+    ),
+    provideClientHydration(
+      withEventReplay(),
+      withIncrementalHydration(),
+      withHttpTransferCacheOptions({
+        includePostRequests: false,
+      }),
+    ),
+    ...provideGlobalErrorHandling(),
+    ...TRANSLOCO_PROVIDERS,
+    providePrimeNG(createPrimeNgConfig(BreviStorePreset)),
   ],
 };

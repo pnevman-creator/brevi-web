@@ -28,6 +28,12 @@
       },
       "configurations": {
         "production": {
+          "fileReplacements": [
+            {
+              "replace": "apps/storefront/src/environments/environment.ts",
+              "with": "apps/storefront/src/environments/environment.production.ts"
+            }
+          ],
           "budgets": [
             {
               "type": "initial",
@@ -73,6 +79,13 @@
         "buildTarget": "storefront:build",
         "staticFilePath": "dist/apps/storefront/browser",
         "spa": true
+      }
+    },
+    "build-cloudflare": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["npx nx build storefront --outputMode=static"],
+        "parallel": false
       }
     }
   }
