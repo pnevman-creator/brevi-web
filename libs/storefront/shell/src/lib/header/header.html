@@ -1,14 +1,14 @@
 <div
   class="card fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-neutral-500 backdrop-blur border-b border-surface-400 dark:border-surface-600"
 >
-  <p-megaMenu [model]="items" [pt]="megaMenuPt">
+  <p-megaMenu [model]="items()" [pt]="megaMenuPt">
     <ng-template #start>
-      <a routerLink="/" class="flex items-center gap-2">
+      <a [routerLink]="homeLink()" class="flex items-center gap-2">
         <img
           ngSrc="/assets/logo/brevi-logo-light.png"
           width="131"
           height="63"
-          alt="Brevi"
+          [alt]="'header.logoAlt' | transloco"
           class="h-14 w-auto"
         />
       </a>
@@ -39,7 +39,7 @@
         </a>
       } @else {
         <div class="flex flex-col items-start gap-4">
-          <img [src]="item.image" alt="wholesale-logo" class="w-full" />
+          <img [src]="item.image" [alt]="'header.wholesaleLogoAlt' | transloco" class="w-full" />
           <span>{{ item.subtext }}</span>
           <p-button
             [label]="item.label"
@@ -59,7 +59,7 @@
           [text]="true"
           (click)="themeService.toggleTheme()"
           class="w-10 h-10 text-surface-500! dark:text-surface-400!"
-          aria-label="Змінити тему"
+          [attr.aria-label]="'header.toggleThemeAria' | transloco"
         >
           <i class="pi" [ngClass]="themeService.isDark() ? 'pi-moon' : 'pi-sun'"></i>
         </button>
@@ -69,7 +69,7 @@
           [text]="true"
           [rounded]="true"
           class="w-10 h-10 text-surface-500! dark:text-surface-400!"
-          aria-label="Аккаунт"
+          [attr.aria-label]="'header.accountAria' | transloco"
         >
           <i class="pi pi-user"></i>
         </button>
@@ -79,7 +79,7 @@
           [text]="true"
           [rounded]="true"
           class="w-10 h-10 text-surface-500! dark:text-surface-400!"
-          aria-label="Корзина"
+          [attr.aria-label]="'header.cartAria' | transloco"
         >
           <i class="pi pi-shopping-cart"></i>
         </button>
