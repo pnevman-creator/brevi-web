@@ -17,7 +17,10 @@ export type HeaderMenuPromo = {
   subtext: string;
 };
 
-const catalogLink = (): MenuLink => ['/catalog'] as const;
+const catalogLink = (slug?: string): MenuLink => {
+  void slug;
+  return ['/catalog'];
+};
 
 const infoLink = (path: string): MenuLink => [path] as const;
 
