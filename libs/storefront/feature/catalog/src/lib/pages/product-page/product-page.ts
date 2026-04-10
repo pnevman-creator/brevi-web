@@ -1,58 +1,78 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { PageHeader, PageHeaderConfig } from '@storefront/ui';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
 
+type Review = {
+  nameKey: string;
+  dateKey: string;
+  rating: number;
+  avatar: string;
+  commentKey: string;
+};
+
 @Component({
   selector: 'lib-product-page',
-  imports: [CommonModule, FormsModule, ButtonModule, InputNumberModule, PageHeader],
+  imports: [CommonModule, FormsModule, ButtonModule, InputNumberModule, PageHeader, TranslocoPipe],
   templateUrl: './product-page.html',
   styleUrl: './product-page.scss',
 })
 export class ProductPage {
-  color: string = 'black';
-  size: string = '20L';
-  liked: boolean = false;
-  images: string[] = ['tabs-1.jpg', 'tabs-2.jpg', 'tabs-3.jpg', 'tabs-4.jpg'];
-  selectedImageIndex: number = 0;
-  quantity: number = 1;
-  activeTab: number = 0;
+  private readonly transloco = inject(TranslocoService);
+  private readonly activeLang = toSignal(this.transloco.langChanges$, {
+    initialValue: this.transloco.getActiveLang(),
+  });
 
-  productPageConfig: PageHeaderConfig = {
-    title: 'Товар 1',
-    breadcrumbs: ['Головна', 'Каталог', 'Зимовий одяг', 'Товар 1'],
-    showSearch: false,
-  };
+  color = 'black';
+  size = '20L';
+  liked = false;
+  images = ['tabs-1.jpg', 'tabs-2.jpg', 'tabs-3.jpg', 'tabs-4.jpg'];
+  selectedImageIndex = 0;
+  quantity = 1;
+  activeTab = 0;
 
-  reviews = [
+  readonly productPageConfig = computed<PageHeaderConfig>(() => {
+    this.activeLang();
+    return {
+      title: this.transloco.translate('catalog.productPage.title'),
+      breadcrumbs: [
+        this.transloco.translate('shared.home'),
+        this.transloco.translate('catalog.productsList.pageTitle'),
+        this.transloco.translate('catalog.productsList.sectionTitle'),
+        this.transloco.translate('catalog.productPage.title'),
+      ],
+      showSearch: false,
+    };
+  });
+
+  reviews: Review[] = [
     {
-      name: 'Eleanor Pena',
-      date: '2 days ago',
+      nameKey: 'catalog.productPage.reviews.items.1.name',
+      dateKey: 'catalog.productPage.reviews.items.1.date',
       rating: 4,
       avatar:
         'https://fqjltiegiezfetthbags.supabase.co/storage/v1/render/image/public/block.images/blocks/avatars/avatar-kathryn.png',
-      comment:
-        'Perfect backpack for daily commuting and weekend trips! The build quality is exceptional and it fits my laptop perfectly. Multiple compartments keep everything organized. Comfortable straps even when fully loaded.',
+      commentKey: 'catalog.productPage.reviews.items.1.comment',
     },
     {
-      name: 'Wade Warren',
-      date: '4 days ago',
+      nameKey: 'catalog.productPage.reviews.items.2.name',
+      dateKey: 'catalog.productPage.reviews.items.2.date',
       rating: 4,
       avatar:
         'https://fqjltiegiezfetthbags.supabase.co/storage/v1/render/image/public/block.images/blocks/avatars/avatar-paul.png',
-      comment:
-        'Amazing backpack that exceeded my expectations! Waterproof material saved my gear during a sudden rainstorm. Love the sleek design and all the pockets. Definitely worth the investment for outdoor adventures.',
+      commentKey: 'catalog.productPage.reviews.items.2.comment',
     },
     {
-      name: 'Robert Fox',
-      date: '1 week ago',
+      nameKey: 'catalog.productPage.reviews.items.3.name',
+      dateKey: 'catalog.productPage.reviews.items.3.date',
       rating: 4,
       avatar:
         'https://fqjltiegiezfetthbags.supabase.co/storage/v1/render/image/public/block.images/blocks/avatars/avatar-ronald.png',
-      comment:
-        'Great quality backpack with excellent durability. The design is stylish and functional for both work and travel. Only wish it had one more external pocket, but overall very satisfied with this purchase.',
+      commentKey: 'catalog.productPage.reviews.items.3.comment',
     },
   ];
 }

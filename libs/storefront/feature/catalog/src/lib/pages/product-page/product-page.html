@@ -1,4 +1,4 @@
-<lib-page-header [config]="productPageConfig" />
+<lib-page-header [config]="productPageConfig()" />
 
 <div class="bg-brand-bg dark:bg-surface-950 px-6 py-20 md:px-12 lg:px-20">
   <div class="flex flex-col lg:flex-row gap-8 mb-16 lg:items-start">
@@ -17,7 +17,9 @@
                 : ''
             "
             (click)="selectedImageIndex = i"
-            alt="Product thumbnail"
+            (keyup.enter)="selectedImageIndex = i"
+            tabindex="0"
+            [alt]="'catalog.product.image.thumbAlt' | transloco"
           />
         }
       </div>
@@ -28,7 +30,7 @@
             images[selectedImageIndex]
           "
           class="w-full h-auto lg:max-h-[31.28rem] lg:min-w-132 lg:max-w-132 rounded-lg"
-          alt="Product main image"
+          [alt]="'catalog.product.image.mainAlt' | transloco"
         />
 
         <div class="flex gap-2 sm:hidden h-32 mt-4">
@@ -45,7 +47,9 @@
                   : ''
               "
               (click)="selectedImageIndex = i"
-              alt="Product thumbnail"
+              (keyup.enter)="selectedImageIndex = i"
+              tabindex="0"
+              [alt]="'catalog.product.image.thumbAlt' | transloco"
             />
           }
         </div>
@@ -58,12 +62,12 @@
           <h1
             class="flex-1 text-surface-900 dark:text-surface-0 text-xl font-semibold leading-tight"
           >
-            RidgeTrail Modular Camera Backpack
+            {{ 'catalog.productPage.title' | transloco }}
           </h1>
         </div>
         <div class="flex items-center justify-between gap-4">
           <div class="text-surface-900 dark:text-surface-0 text-2xl font-normal leading-tight">
-            $279
+            {{ 'catalog.productPage.price' | transloco }}
           </div>
           <div class="flex items-center gap-4">
             <div class="flex items-center gap-1">
@@ -77,7 +81,9 @@
             </div>
             <div class="text-xs leading-tight">
               <span class="font-bold text-surface-900 dark:text-surface-0">58 </span>
-              <span class="text-surface-500 dark:text-surface-400">reviews</span>
+              <span class="text-surface-500 dark:text-surface-400">{{
+                'catalog.productPage.reviews.label' | transloco
+              }}</span>
             </div>
           </div>
         </div>
@@ -85,7 +91,7 @@
 
       <div class="flex flex-col gap-4">
         <div class="text-surface-900 dark:text-surface-0 text-sm font-semibold leading-tight">
-          Color
+          {{ 'catalog.productPage.color' | transloco }}
         </div>
         <div class="flex items-center gap-4">
           <div
@@ -96,6 +102,8 @@
                 : ''
             "
             (click)="color = 'black'"
+            (keyup.enter)="color = 'black'"
+            tabindex="0"
           ></div>
           <div
             class="w-7 h-7 rounded-full bg-zinc-500 cursor-pointer transition-all duration-150 outline outline-2 outline-surface-0 dark:outline-surface-950"
@@ -105,6 +113,8 @@
                 : ''
             "
             (click)="color = 'gray'"
+            (keyup.enter)="color = 'gray'"
+            tabindex="0"
           ></div>
           <div
             class="w-7 h-7 rounded-full bg-zinc-300 cursor-pointer transition-all duration-150 outline outline-2 outline-surface-0 dark:outline-surface-950"
@@ -114,6 +124,8 @@
                 : ''
             "
             (click)="color = 'light'"
+            (keyup.enter)="color = 'light'"
+            tabindex="0"
           ></div>
         </div>
       </div>
@@ -123,7 +135,7 @@
           <div
             class="flex-1 text-surface-900 dark:text-surface-0 text-sm font-semibold leading-tight"
           >
-            Size
+            {{ 'catalog.productPage.size' | transloco }}
           </div>
         </div>
         <div class="flex items-center gap-3">
@@ -137,6 +149,8 @@
               ].join(' ')
             "
             (click)="size = '10L'"
+            (keyup.enter)="size = '10L'"
+            tabindex="0"
           >
             10L
           </div>
@@ -150,6 +164,8 @@
               ].join(' ')
             "
             (click)="size = '15L'"
+            (keyup.enter)="size = '15L'"
+            tabindex="0"
           >
             15L
           </div>
@@ -163,6 +179,8 @@
               ].join(' ')
             "
             (click)="size = '20L'"
+            (keyup.enter)="size = '20L'"
+            tabindex="0"
           >
             20L
           </div>
@@ -176,6 +194,8 @@
               ].join(' ')
             "
             (click)="size = '25L'"
+            (keyup.enter)="size = '25L'"
+            tabindex="0"
           >
             25L
           </div>
@@ -198,7 +218,7 @@
       <div class="flex flex-col gap-8">
         <div class="flex flex-col gap-4">
           <div class="text-surface-900 dark:text-surface-0 text-sm font-semibold leading-tight">
-            Quantity
+            {{ 'catalog.product.quantity.label' | transloco }}
           </div>
           <p-inputnumber
             [(ngModel)]="quantity"
@@ -219,7 +239,7 @@
             pButton
             class="flex-1 py-2! px-4! bg-surface-900! dark:bg-surface-0! text-surface-0! dark:text-surface-900! border-surface-900! dark:border-surface-0! rounded-md! font-medium! text-sm!"
           >
-            <span pButtonLabel>Add to Cart</span>
+            <span pButtonLabel>{{ 'catalog.product.addToCart' | transloco }}</span>
           </button>
           <button
             pButton
@@ -242,13 +262,15 @@
         <div
           class="bg-surface-0 dark:bg-surface-950 rounded-t-md flex flex-col cursor-pointer transition-colors duration-150"
           (click)="activeTab = 0"
+          (keyup.enter)="activeTab = 0"
+          tabindex="0"
         >
           <div class="py-5 px-5 flex items-center gap-2">
             <div
               class="text-base font-bold leading-tight"
               [class]="activeTab === 0 ? 'text-primary' : 'text-surface-500 dark:text-surface-400'"
             >
-              Details
+              {{ 'catalog.productPage.tabs.details' | transloco }}
             </div>
           </div>
           <div
@@ -259,13 +281,15 @@
         <div
           class="bg-surface-0 dark:bg-surface-950 rounded-t-md flex flex-col cursor-pointer transition-colors duration-150"
           (click)="activeTab = 1"
+          (keyup.enter)="activeTab = 1"
+          tabindex="0"
         >
           <div class="py-5 px-5 flex items-center gap-2">
             <div
               class="text-base font-semibold leading-tight"
               [class]="activeTab === 1 ? 'text-primary' : 'text-surface-500 dark:text-surface-400'"
             >
-              Reviews
+              {{ 'catalog.productPage.tabs.reviews' | transloco }}
             </div>
           </div>
           <div
@@ -276,13 +300,15 @@
         <div
           class="bg-surface-0 dark:bg-surface-950 rounded-t-md flex flex-col cursor-pointer transition-colors duration-150"
           (click)="activeTab = 2"
+          (keyup.enter)="activeTab = 2"
+          tabindex="0"
         >
           <div class="py-5 px-5 flex items-center gap-2">
             <div
               class="text-base font-semibold leading-tight"
               [class]="activeTab === 2 ? 'text-primary' : 'text-surface-500 dark:text-surface-400'"
             >
-              Shipping
+              {{ 'catalog.productPage.tabs.shipping' | transloco }}
             </div>
           </div>
           <div
@@ -299,88 +325,85 @@
         <div class="flex flex-col gap-4">
           <div class="flex flex-col gap-4">
             <h3 class="text-surface-900 dark:text-surface-0 text-2xl font-medium leading-tight">
-              Made to Move
+              {{ 'catalog.productPage.details.title' | transloco }}
             </h3>
             <p class="text-surface-500 dark:text-surface-400 text-base font-normal leading-normal">
-              Built for adventure and designed for creators, the RidgeTrail Modular Camera Backpack
-              keeps your gear protected, organized, and ready for any terrain.<br />
-              Whether you're hiking remote landscapes or navigating urban shoots, this bag delivers
-              durability without compromise.
+              {{ 'catalog.productPage.details.description' | transloco }}
             </p>
           </div>
 
           <div class="flex flex-col md:flex-row gap-2">
             <div class="flex-1 p-4 flex flex-col gap-4">
               <h4 class="text-surface-900 dark:text-surface-0 text-xl font-medium leading-tight">
-                Highlights
+                {{ 'catalog.productPage.details.highlightsTitle' | transloco }}
               </h4>
               <ul
                 class="pl-4 text-surface-500 dark:text-surface-400 font-normal list-disc space-y-1"
               >
-                <li>Customizable interior dividers for total control</li>
-                <li>Side-access zipper for fast lens swaps</li>
-                <li>Weather-resistant shell with reinforced stitching</li>
+                <li>{{ 'catalog.productPage.details.highlights.1' | transloco }}</li>
+                <li>{{ 'catalog.productPage.details.highlights.2' | transloco }}</li>
+                <li>{{ 'catalog.productPage.details.highlights.3' | transloco }}</li>
               </ul>
             </div>
 
             <div class="flex-1 p-4 flex flex-col gap-4">
               <h4 class="text-surface-900 dark:text-surface-0 text-xl font-medium leading-tight">
-                Size and Fit
+                {{ 'catalog.productPage.details.sizeAndFitTitle' | transloco }}
               </h4>
               <div class="flex flex-col gap-2">
                 <div>
                   <span
                     class="text-surface-700 dark:text-surface-200 text-base font-medium leading-tight"
-                    >10L Mirrorless Kit:</span
+                    >{{ 'catalog.productPage.details.sizes.10l.label' | transloco }}</span
                   >
                   <span
                     class="text-surface-500 dark:text-surface-400 text-base font-normal leading-tight"
                   >
-                    Fits 1 mirrorless body + 2–3 lenses</span
+                    {{ 'catalog.productPage.details.sizes.10l.value' | transloco }}</span
                   >
                 </div>
                 <div>
                   <span
                     class="text-surface-700 dark:text-surface-200 text-base font-medium leading-tight"
-                    >15L Compact DSLR:</span
+                    >{{ 'catalog.productPage.details.sizes.15l.label' | transloco }}</span
                   >
                   <span
                     class="text-surface-500 dark:text-surface-400 text-base font-normal leading-tight"
                   >
-                    Fits DSLR + 2–3 lenses</span
+                    {{ 'catalog.productPage.details.sizes.15l.value' | transloco }}</span
                   >
                 </div>
                 <div>
                   <span
                     class="text-surface-700 dark:text-surface-200 text-base font-medium leading-tight"
-                    >20L DSLR Standard:</span
+                    >{{ 'catalog.productPage.details.sizes.20l.label' | transloco }}</span
                   >
                   <span
                     class="text-surface-500 dark:text-surface-400 text-base font-normal leading-tight"
                   >
-                    Fits DSLR + 3–5 lenses + flash</span
+                    {{ 'catalog.productPage.details.sizes.20l.value' | transloco }}</span
                   >
                 </div>
                 <div>
                   <span
                     class="text-surface-700 dark:text-surface-200 text-base font-medium leading-tight"
-                    >25L Pro:</span
+                    >{{ 'catalog.productPage.details.sizes.25l.label' | transloco }}</span
                   >
                   <span
                     class="text-surface-500 dark:text-surface-400 text-base font-normal leading-tight"
                   >
-                    Full-frame DSLR + 6+ lenses + tripod</span
+                    {{ 'catalog.productPage.details.sizes.25l.value' | transloco }}</span
                   >
                 </div>
                 <div>
                   <span
                     class="text-surface-700 dark:text-surface-200 text-base font-medium leading-tight"
-                    >30L Pro Max:</span
+                    >{{ 'catalog.productPage.details.sizes.30l.label' | transloco }}</span
                   >
                   <span
                     class="text-surface-500 dark:text-surface-400 text-base font-normal leading-tight"
                   >
-                    Drone space + accessory compartments</span
+                    {{ 'catalog.productPage.details.sizes.30l.value' | transloco }}</span
                   >
                 </div>
               </div>
@@ -388,7 +411,7 @@
 
             <div class="flex-1 p-4 flex flex-col gap-4">
               <h4 class="text-surface-900 dark:text-surface-0 text-xl font-medium leading-tight">
-                Material & Care
+                {{ 'catalog.productPage.details.materialTitle' | transloco }}
               </h4>
               <div class="flex gap-2">
                 <div class="flex-1 p-2 flex flex-col gap-4">
@@ -398,7 +421,7 @@
                     ></i>
                     <span
                       class="text-surface-500 dark:text-surface-400 text-base font-normal leading-tight"
-                      >Not dryer safe</span
+                      >{{ 'catalog.productPage.details.care.1' | transloco }}</span
                     >
                   </div>
                   <div class="flex items-center gap-2">
@@ -407,7 +430,7 @@
                     ></i>
                     <span
                       class="text-surface-500 dark:text-surface-400 text-base font-normal leading-tight"
-                      >Iron medium heat</span
+                      >{{ 'catalog.productPage.details.care.2' | transloco }}</span
                     >
                   </div>
                 </div>
@@ -418,7 +441,7 @@
                     ></i>
                     <span
                       class="text-surface-500 dark:text-surface-400 text-base font-normal leading-tight"
-                      >No chemical wash</span
+                      >{{ 'catalog.productPage.details.care.3' | transloco }}</span
                     >
                   </div>
                   <div class="flex items-center gap-2">
@@ -427,7 +450,7 @@
                     ></i>
                     <span
                       class="text-surface-500 dark:text-surface-400 text-base font-normal leading-tight"
-                      >Dry flat</span
+                      >{{ 'catalog.productPage.details.care.4' | transloco }}</span
                     >
                   </div>
                 </div>
@@ -441,28 +464,32 @@
         <div class="flex flex-col gap-4">
           <div class="flex flex-col gap-4">
             <h3 class="text-surface-900 dark:text-surface-0 text-2xl font-medium leading-tight">
-              Customer Reviews
+              {{ 'catalog.productPage.reviews.title' | transloco }}
             </h3>
             <p class="text-surface-500 dark:text-surface-400 text-base font-normal leading-normal">
-              See what our customers are saying about the RidgeTrail Modular Camera Backpack.
+              {{ 'catalog.productPage.reviews.description' | transloco }}
             </p>
           </div>
 
           <div class="flex flex-col gap-4">
-            @for (review of reviews; track review.name; let idx = $index) {
+            @for (review of reviews; track review.nameKey; let idx = $index) {
               <div
                 class="self-stretch p-4 rounded-xl bg-surface-0 dark:bg-surface-950 flex flex-col gap-4"
               >
                 <div class="flex items-center gap-4">
                   <div class="flex-1 flex items-center gap-4">
-                    <img [src]="review.avatar" class="w-12 h-12 rounded-full" [alt]="review.name" />
+                    <img
+                      [src]="review.avatar"
+                      class="w-12 h-12 rounded-full"
+                      [alt]="review.nameKey | transloco"
+                    />
                     <div class="flex-1 flex flex-col">
                       <span
                         class="text-surface-900 dark:text-surface-0 text-base font-medium leading-tight"
-                        >{{ review.name }}</span
+                        >{{ review.nameKey | transloco }}</span
                       >
                       <span class="text-surface-400 dark:text-surface-500 text-sm font-medium">{{
-                        review.date
+                        review.dateKey | transloco
                       }}</span>
                     </div>
                   </div>
@@ -491,7 +518,7 @@
                 <p
                   class="text-surface-700 dark:text-surface-300 text-base font-normal leading-normal"
                 >
-                  {{ review.comment }}
+                  {{ review.commentKey | transloco }}
                 </p>
               </div>
 
@@ -507,77 +534,87 @@
         <div class="flex flex-col gap-4">
           <div class="flex flex-col gap-4">
             <h3 class="text-surface-900 dark:text-surface-0 text-2xl font-medium leading-tight">
-              Shipping Information
+              {{ 'catalog.productPage.shipping.title' | transloco }}
             </h3>
             <p class="text-surface-500 dark:text-surface-400 text-base font-normal leading-normal">
-              Free shipping on orders over $200. All orders are processed within 1-2 business days
-              and shipped via reliable carriers with tracking information provided.
+              {{ 'catalog.productPage.shipping.description' | transloco }}
             </p>
           </div>
 
           <div class="flex flex-col md:flex-row gap-2">
             <div class="flex-1 p-4 flex flex-col gap-4">
               <h4 class="text-surface-900 dark:text-surface-0 text-xl font-medium leading-tight">
-                Shipping Costs
+                {{ 'catalog.productPage.shipping.costsTitle' | transloco }}
               </h4>
               <ul
                 class="pl-4 text-surface-500 dark:text-surface-400 font-normal list-disc space-y-1"
               >
-                <li>Standard (5-7 days) - $9.99</li>
-                <li>Express (2-3 days) - $19.99</li>
-                <li>Overnight - $39.99</li>
-                <li>International - Starting at $29.99</li>
+                <li>{{ 'catalog.productPage.shipping.costs.1' | transloco }}</li>
+                <li>{{ 'catalog.productPage.shipping.costs.2' | transloco }}</li>
+                <li>{{ 'catalog.productPage.shipping.costs.3' | transloco }}</li>
+                <li>{{ 'catalog.productPage.shipping.costs.4' | transloco }}</li>
               </ul>
             </div>
 
             <div class="flex-1 p-4 flex flex-col gap-4">
               <h4 class="text-surface-900 dark:text-surface-0 text-xl font-medium leading-tight">
-                Return Policy
+                {{ 'catalog.productPage.shipping.returnPolicyTitle' | transloco }}
               </h4>
               <p
                 class="text-surface-500 dark:text-surface-400 text-base font-normal leading-normal"
               >
-                30-day return policy. Items must be in original condition with all tags attached.
-                Return shipping is free for defective items.
+                {{ 'catalog.productPage.shipping.returnPolicyText' | transloco }}
               </p>
             </div>
 
             <div class="flex-1 p-4 flex flex-col gap-4">
               <h4 class="text-surface-900 dark:text-surface-0 text-xl font-medium leading-tight">
-                Delivery Options
+                {{ 'catalog.productPage.shipping.deliveryOptionsTitle' | transloco }}
               </h4>
               <div class="flex flex-col gap-2">
                 <div>
                   <span
                     class="text-surface-700 dark:text-surface-200 text-base font-medium leading-tight"
-                    >Same Day:</span
+                    >{{
+                      'catalog.productPage.shipping.deliveryOptions.sameDayLabel' | transloco
+                    }}</span
                   >
                   <span
                     class="text-surface-500 dark:text-surface-400 text-base font-normal leading-tight"
                   >
-                    Available in select cities</span
+                    {{
+                      'catalog.productPage.shipping.deliveryOptions.sameDayValue' | transloco
+                    }}</span
                   >
                 </div>
                 <div>
                   <span
                     class="text-surface-700 dark:text-surface-200 text-base font-medium leading-tight"
-                    >Pickup:</span
+                    >{{
+                      'catalog.productPage.shipping.deliveryOptions.pickupLabel' | transloco
+                    }}</span
                   >
                   <span
                     class="text-surface-500 dark:text-surface-400 text-base font-normal leading-tight"
                   >
-                    Free at our retail locations</span
+                    {{
+                      'catalog.productPage.shipping.deliveryOptions.pickupValue' | transloco
+                    }}</span
                   >
                 </div>
                 <div>
                   <span
                     class="text-surface-700 dark:text-surface-200 text-base font-medium leading-tight"
-                    >Gift Wrapping:</span
+                    >{{
+                      'catalog.productPage.shipping.deliveryOptions.giftWrapLabel' | transloco
+                    }}</span
                   >
                   <span
                     class="text-surface-500 dark:text-surface-400 text-base font-normal leading-tight"
                   >
-                    Available for $4.99</span
+                    {{
+                      'catalog.productPage.shipping.deliveryOptions.giftWrapValue' | transloco
+                    }}</span
                   >
                 </div>
               </div>
