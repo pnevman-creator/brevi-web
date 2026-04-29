@@ -3,6 +3,6 @@
 export const homeRoutes: Routes = [
   {
     path: '',
-    loadComponent: () => import('./page/home-page').then((p) => p.HomePage),
+    loadComponent: () => import('./page/home.page').then((p) => p.HomePage),
   },
 ];

@@ -4,8 +4,6 @@ export const notFoundRoutes: Route[] = [
   {
     path: '404',
     loadComponent: () =>
-      import('./page/not-found-page/not-found-page').then(
-        (page) => page.NotFoundPage,
-      ),
+      import('./page/not-found-page/not-found.page').then((page) => page.NotFoundPage),
   },
 ];

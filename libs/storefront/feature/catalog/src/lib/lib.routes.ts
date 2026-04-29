@@ -3,10 +3,11 @@
 export const catalogRoutes: Routes = [
   {
     path: 'catalog',
-    loadComponent: () => import('./pages/products-list/products-list').then((p) => p.ProductsList),
+    loadComponent: () =>
+      import('./pages/products-list/products-list.page').then((p) => p.ProductsList),
   },
   {
     path: 'product-page',
-    loadComponent: () => import('./pages/product-page/product-page').then((p) => p.ProductPage),
+    loadComponent: () => import('./pages/product-page/product.page').then((p) => p.ProductPage),
   },
 ];
