@@ -7,6 +7,11 @@ type CharacteristicRow = {
   valueKey: string;
 };
 
+type ProductInfoItem = {
+  labelKey: string;
+  valueKey: string;
+};
+
 @Component({
   selector: 'lib-product-tabs',
   imports: [TranslocoPipe, TableModule],
@@ -15,6 +20,40 @@ type CharacteristicRow = {
 })
 export class ProductTabs {
   activeTab = 0;
+  readonly productInfoItems: ProductInfoItem[] = [
+    {
+      labelKey: 'catalog.productPage.info.model.label',
+      valueKey: 'catalog.productPage.info.model.value',
+    },
+    {
+      labelKey: 'catalog.productPage.info.professions.label',
+      valueKey: 'catalog.productPage.info.professions.value',
+    },
+    {
+      labelKey: 'catalog.productPage.info.gender.label',
+      valueKey: 'catalog.productPage.info.gender.value',
+    },
+    {
+      labelKey: 'catalog.productPage.info.season.label',
+      valueKey: 'catalog.productPage.info.season.value',
+    },
+    {
+      labelKey: 'catalog.productPage.info.photoFabric.label',
+      valueKey: 'catalog.productPage.info.photoFabric.value',
+    },
+    {
+      labelKey: 'catalog.productPage.info.features.label',
+      valueKey: 'catalog.productPage.info.features.value',
+    },
+    {
+      labelKey: 'catalog.productPage.info.logo.label',
+      valueKey: 'catalog.productPage.info.logo.value',
+    },
+    {
+      labelKey: 'catalog.productPage.info.additional.label',
+      valueKey: 'catalog.productPage.info.additional.value',
+    },
+  ];
 
   readonly jacketCharacteristics: CharacteristicRow[] = [
     {
