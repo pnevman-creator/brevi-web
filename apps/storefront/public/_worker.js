@@ -33,8 +33,8 @@ export default {
     }
 
     const locale = resolveLocale(pathname);
-    const localizedIndexUrl = new URL(`/${locale}/index.html`, requestUrl);
-    return env.ASSETS.fetch(new Request(localizedIndexUrl.toString(), request));
+    const localizedRootUrl = new URL(`/${locale}/`, requestUrl);
+    return env.ASSETS.fetch(new Request(localizedRootUrl.toString(), request));
   },
 };
 
