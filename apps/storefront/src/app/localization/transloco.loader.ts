@@ -22,6 +22,10 @@ import { ruFooterTranslation, ukFooterTranslation } from './translations/footer.
 import { ruHeaderTranslation, ukHeaderTranslation } from './translations/header.translation';
 import { ruHomeTranslation, ukHomeTranslation } from './translations/home.translation';
 import { ruNotFoundTranslation, ukNotFoundTranslation } from './translations/not-found.translation';
+import {
+  ruProductPageUiTranslation,
+  ukProductPageUiTranslation,
+} from './translations/product-page-ui.translation';
 import { ruRegionsTranslation, ukRegionsTranslation } from './translations/regions.translation';
 import { ruReturnsTranslation, ukReturnsTranslation } from './translations/returns.translation';
 import { ruTranslation } from './translations/ru.translation';
@@ -35,6 +39,7 @@ const TRANSLATIONS: Record<string, Translation> = {
     ...ukFooterTranslation,
     ...ukCatalogTranslation,
     ...ukCatalogExtraTranslation,
+    ...ukProductPageUiTranslation,
     ...ukAboutTranslation,
     ...ukAgreementTranslation,
     ...ukArticlesTranslation,
@@ -51,6 +56,7 @@ const TRANSLATIONS: Record<string, Translation> = {
     ...ruFooterTranslation,
     ...ruCatalogTranslation,
     ...ruCatalogExtraTranslation,
+    ...ruProductPageUiTranslation,
     ...ruAboutTranslation,
     ...ruAgreementTranslation,
     ...ruArticlesTranslation,
