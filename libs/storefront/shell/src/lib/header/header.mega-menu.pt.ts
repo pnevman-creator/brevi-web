@@ -6,10 +6,8 @@ export const HEADER_MEGA_MENU_PT = {
       '--p-megamenu-color': '#f5f5f5',
       '--p-megamenu-border-color': 'transparent',
       '--p-megamenu-border-radius': '0',
-      '--p-megamenu-item-focus-background': '#3f3f46',
-      '--p-megamenu-item-active-background': '#3f3f46',
-      '--p-megamenu-submenu-background': 'var(--color-brand-neutral)',
-      '--p-megamenu-submenu-color': '#f5f5f5',
+      '--p-megamenu-item-focus-background': 'transparent',
+      '--p-megamenu-item-active-background': 'transparent',
       '--p-megamenu-submenu-label-color': 'var(--p-primary-500)',
       backgroundColor: 'var(--color-brand-neutral)',
       color: '#f5f5f5',
@@ -31,18 +29,9 @@ export const HEADER_MEGA_MENU_PT = {
   },
   itemLink: {
     class:
-      'text-surface-100 hover:text-surface-0 hover:bg-surface-800/70 rounded-md transition-colors duration-150',
-  },
-  submenu: {
-    class: 'bg-brand-neutral text-surface-100 border border-surface-700 shadow-lg',
+      'text-surface-100 hover:text-primary hover:font-semibold hover:bg-transparent transition-colors duration-150',
   },
   button: {
-    style: {
-      flexGrow: '1',
-      justifyContent: 'center',
-    },
-  },
-  submenuLabel: {
     style: {
       flexGrow: '1',
       justifyContent: 'center',

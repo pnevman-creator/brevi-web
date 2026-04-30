@@ -19,17 +19,17 @@
         <div class="mb-0.5 text-[11px] font-medium uppercase tracking-wide text-surface-300">
           Відділ продажу
         </div>
-        <div class="flex items-center gap-3 text-sm">
+        <div class="flex items-center gap-3 text-base">
           <a
             href="tel:+380503075554"
-            class="font-semibold text-primary no-underline hover:text-primary transition-colors"
+            class="font-semibold text-primary no-underline hover:text-primary-300 transition-colors"
           >
             050 307 55 54
           </a>
           <span class="text-surface-500">•</span>
           <a
             href="tel:+380532671109"
-            class="font-semibold text-primary no-underline hover:text-primary transition-colors"
+            class="font-semibold text-primary no-underline hover:text-primary-300 transition-colors"
           >
             053 267 11 09
           </a>
@@ -62,7 +62,7 @@
         [rounded]="true"
         [text]="true"
         (click)="themeService.toggleTheme()"
-        class="w-10 h-10 text-surface-200! hover:text-surface-0!"
+        class="w-10 h-10 text-surface-200! hover:text-surface-0! hover:bg-surface-800!"
         [attr.aria-label]="'header.toggleThemeAria' | transloco"
       >
         <i class="pi" [ngClass]="themeService.isDark() ? 'pi-moon' : 'pi-sun'"></i>
@@ -77,7 +77,7 @@
           <a
             pRipple
             [routerLink]="item.routerLink"
-            class="flex items-center cursor-pointer px-3 py-1.5 overflow-hidden relative font-semibold text-sm uppercase text-surface-100 hover:text-surface-0"
+            class="flex items-center cursor-pointer px-3 py-1.5 overflow-hidden relative font-semibold text-sm uppercase text-surface-100 hover:text-primary hover:font-bold hover:bg-transparent"
             style="border-radius: 2rem"
           >
             <i [ngClass]="item.icon"></i>
@@ -93,7 +93,7 @@
             [routerLink]="item.routerLink"
           >
             <span class="inline-flex flex-col gap-1">
-              <span class="text-base text-surface-100">
+              <span class="text-base">
                 {{ item.label }}
               </span>
             </span>
