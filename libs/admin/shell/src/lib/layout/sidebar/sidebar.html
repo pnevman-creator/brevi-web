@@ -37,7 +37,7 @@
           [model]="menuItems"
           [multiple]="true"
           [pt]="panelMenuPt"
-          styleClass="w-full border-0 bg-transparent shadow-none"
+          class="w-full border-0 bg-transparent shadow-none"
         >
           <ng-template pTemplate="item" let-item>
             @if (item.items?.length || item.label === 'Загальні звіти') {
