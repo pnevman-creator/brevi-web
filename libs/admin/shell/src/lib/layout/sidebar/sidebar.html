@@ -32,144 +32,43 @@
           </p-iconfield>
         </div>
 
-        <div class="flex flex-col">
-          <div
-            pStyleClass="@next"
-            enterFromClass="hidden"
-            enterActiveClass="animate-slidedown"
-            leaveToClass="hidden"
-            leaveActiveClass="animate-slideup"
-            class="flex items-center cursor-pointer p-3 gap-4 rounded-md text-surface-900 dark:text-surface-0 hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors duration-150 border border-transparent hover:border hover:border-surface-200 dark:hover:border-surface-700"
-          >
-            <span class="font-semibold text-base leading-tight">Home</span>
-            <i
-              class="pi pi-angle-down text-base! leading-none! text-surface-500 dark:text-surface-400 ml-auto"
-            ></i>
-          </div>
-          <ul class="list-none m-0 overflow-hidden flex flex-col gap-1">
-            <li>
-              <a
-                class="flex items-center cursor-pointer p-3 gap-2 rounded-lg text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors duration-150 hover:text-surface-900 dark:hover:text-surface-50 group border border-transparent hover:border hover:border-surface-200 dark:hover:border-surface-700"
+        <div class="flex flex-col gap-4">
+          @for (section of menuSections; track section.title) {
+            <div class="flex flex-col gap-1">
+              <div
+                class="flex items-center cursor-pointer p-3 gap-4 rounded-md text-surface-900 dark:text-surface-0 hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors duration-150 border border-transparent hover:border hover:border-surface-200 dark:hover:border-surface-700"
               >
-                <i
-                  class="pi pi-home text-base! leading-none! text-surface-500 dark:text-surface-400 group-hover:text-surface-900 dark:group-hover:text-surface-50"
-                ></i>
-                <span class="font-medium text-base leading-tight">Dashboard</span>
-              </a>
-            </li>
-            <li>
-              <a
-                class="flex items-center cursor-pointer p-3 gap-2 rounded-lg text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors duration-150 hover:text-surface-900 dark:hover:text-surface-50 group border border-transparent hover:border hover:border-surface-200 dark:hover:border-surface-700"
-              >
-                <i
-                  class="pi pi-bookmark text-base! leading-none! text-surface-500 dark:text-surface-400 group-hover:text-surface-900 dark:group-hover:text-surface-50"
-                ></i>
-                <span class="font-medium text-base leading-tight">Bookmarks</span>
-                <p-badge
-                  value="8"
-                  severity="contrast"
-                  class="ml-auto h-5! min-w-5! text-xs! font-bold! leading-tight! rounded-xl!"
-                ></p-badge>
-              </a>
-            </li>
-            <li>
-              <a
-                class="flex items-center cursor-pointer p-3 gap-2 rounded-lg text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors duration-150 hover:text-surface-900 dark:hover:text-surface-50 group border border-transparent hover:border hover:border-surface-200 dark:hover:border-surface-700"
-              >
-                <i
-                  class="pi pi-users text-base! leading-none! text-surface-500 dark:text-surface-400 group-hover:text-surface-900 dark:group-hover:text-surface-50"
-                ></i>
-                <span class="font-medium text-base leading-tight">Team</span>
-              </a>
-            </li>
-            <li>
-              <a
-                class="flex items-center cursor-pointer p-3 gap-2 rounded-lg text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors duration-150 hover:text-surface-900 dark:hover:text-surface-50 group border border-transparent hover:border hover:border-surface-200 dark:hover:border-surface-700"
-              >
-                <i
-                  class="pi pi-inbox text-base! leading-none! text-surface-500 dark:text-surface-400 group-hover:text-surface-900 dark:group-hover:text-surface-50"
-                ></i>
-                <span class="font-medium text-base leading-tight">Messages</span>
-                <p-badge
-                  value="2"
-                  severity="secondary"
-                  class="ml-auto h-5! min-w-5! text-xs! font-bold! leading-tight! rounded-xl!"
-                ></p-badge>
-              </a>
-            </li>
-            <li>
-              <a
-                class="flex items-center cursor-pointer p-3 gap-2 rounded-lg text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors duration-150 hover:text-surface-900 dark:hover:text-surface-50 group border border-transparent hover:border hover:border-surface-200 dark:hover:border-surface-700"
-              >
-                <i
-                  class="pi pi-calendar text-base! leading-none! text-surface-500 dark:text-surface-400 group-hover:text-surface-900 dark:group-hover:text-surface-50"
-                ></i>
-                <span class="font-medium text-base leading-tight">Calendar</span>
-              </a>
-            </li>
-          </ul>
-        </div>
+                <span class="font-semibold text-base leading-tight">{{ section.title }}</span>
+                @if (section.items.length) {
+                  <i
+                    class="pi pi-angle-down text-base! leading-none! text-surface-500 dark:text-surface-400 ml-auto"
+                  ></i>
+                }
+              </div>
 
-        <hr class="border-t border-surface-200 dark:border-surface-800 my-0" />
-
-        <div class="flex flex-col gap-1">
-          <div
-            pStyleClass="@next"
-            enterFromClass="hidden"
-            enterActiveClass="animate-slidedown"
-            leaveToClass="hidden"
-            leaveActiveClass="animate-slideup"
-            class="flex items-center cursor-pointer p-3 gap-4 rounded-md text-surface-900 dark:text-surface-0 hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors duration-150 border border-transparent hover:border hover:border-surface-200 dark:hover:border-surface-700"
-          >
-            <span class="font-semibold text-base leading-tight">Your Networks</span>
-            <i
-              class="pi pi-angle-down text-base! leading-none! text-surface-500 dark:text-surface-400 ml-auto"
-            ></i>
-          </div>
-          <ul class="list-none m-0 overflow-hidden flex flex-col gap-1 mt-1">
-            <li>
-              <a
-                class="flex items-center cursor-pointer p-3 gap-2 rounded-lg text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors duration-150 hover:text-surface-900 dark:hover:text-surface-50 group border border-transparent hover:border hover:border-surface-200 dark:hover:border-surface-700"
-              >
-                <span
-                  class="inline-flex items-center justify-center p-1 bg-violet-100 dark:bg-violet-500/20 rounded-md border border-violet-200 dark:border-violet-500/30"
-                >
-                  <i
-                    class="pi pi-sparkles text-xs! leading-none! text-violet-600 dark:text-violet-300"
-                  ></i>
-                </span>
-                <span class="font-medium text-base leading-tight">Front-End Developers</span>
-              </a>
-            </li>
-            <li>
-              <a
-                class="flex items-center cursor-pointer p-3 gap-2 rounded-lg text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors duration-150 hover:text-surface-900 dark:hover:text-surface-50 group border border-transparent hover:border hover:border-surface-200 dark:hover:border-surface-700"
-              >
-                <span
-                  class="inline-flex items-center justify-center p-1 bg-amber-100 dark:bg-amber-500/20 rounded-md border border-amber-200 dark:border-amber-500/30"
-                >
-                  <i
-                    class="pi pi-wrench text-xs! leading-none! text-amber-600 dark:text-amber-300"
-                  ></i>
-                </span>
-                <span class="font-medium text-base leading-tight">Back-End Developers</span>
-              </a>
-            </li>
-            <li>
-              <a
-                class="flex items-center cursor-pointer p-3 gap-2 rounded-lg text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors duration-150 hover:text-surface-900 dark:hover:text-surface-50 group border border-transparent hover:border hover:border-surface-200 dark:hover:border-surface-700"
-              >
-                <span
-                  class="inline-flex items-center justify-center p-1 bg-lime-100 dark:bg-lime-500/20 rounded-md border border-lime-200 dark:border-lime-500/30"
-                >
-                  <i
-                    class="pi pi-palette text-xs! leading-none! text-lime-600 dark:text-lime-300"
-                  ></i>
-                </span>
-                <span class="font-medium text-base leading-tight">UI/UX Designers</span>
-              </a>
-            </li>
-          </ul>
+              @if (section.items.length) {
+                <ul class="list-none m-0 overflow-hidden flex flex-col gap-1">
+                  @for (item of section.items; track item.label) {
+                    <li>
+                      <button
+                        type="button"
+                        class="w-full flex items-center cursor-pointer p-3 gap-2 rounded-lg text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors duration-150 hover:text-surface-900 dark:hover:text-surface-50 group border border-transparent hover:border hover:border-surface-200 dark:hover:border-surface-700 text-left"
+                      >
+                        <span
+                          class="inline-flex items-center justify-center p-1 bg-surface-100 dark:bg-surface-800 rounded-md border border-surface-200 dark:border-surface-700"
+                        >
+                          <i
+                            class="pi pi-circle text-xs! leading-none! text-surface-500 dark:text-surface-400"
+                          ></i>
+                        </span>
+                        <span class="font-medium text-base leading-tight">{{ item.label }}</span>
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          }
         </div>
       </div>
       <div class="p-4 mt-auto">
