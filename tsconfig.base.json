@@ -34,6 +34,7 @@
       "@shared/theme": ["libs/shared/theme/src/index.ts"],
       "@admin/feature/dashboard": ["libs/admin/feature/dashboard/src/index.ts"],
       "@admin/ui": ["libs/admin/ui/src/index.ts"],
+      "@admin/shell": ["libs/admin/shell/src/index.ts"],
       "@admin/feature/references": ["libs/admin/feature/references/src/index.ts"]
     }
   }

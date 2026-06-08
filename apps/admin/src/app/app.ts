@@ -1,4 +1,4 @@
-import { Sidebar } from '@admin/ui';
+import { Sidebar } from '@admin/shell';
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { Toast } from 'primeng/toast';
