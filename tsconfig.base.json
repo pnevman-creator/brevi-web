@@ -29,13 +29,12 @@
       "@storefront/feature/order-in-bulk": [
         "libs/storefront/feature/order-in-bulk/order-in-bulk/src/index.ts"
       ],
-      "@storefront/feature/not-found": [
-        "libs/storefront/feature/not-found/src/index.ts"
-      ],
+      "@storefront/feature/not-found": ["libs/storefront/feature/not-found/src/index.ts"],
       "@storefront/feature/regions": ["libs/storefront/feature/regions/regions/src/index.ts"],
       "@shared/theme": ["libs/shared/theme/src/index.ts"],
       "@admin/feature/dashboard": ["libs/admin/feature/dashboard/src/index.ts"],
-      "@admin/ui": ["libs/admin/ui/src/index.ts"]
+      "@admin/ui": ["libs/admin/ui/src/index.ts"],
+      "@admin/feature/references": ["libs/admin/feature/references/src/index.ts"]
     }
   }
 }
