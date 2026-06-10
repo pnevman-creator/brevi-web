@@ -9,10 +9,6 @@ export const referencesRoutes: Route[] = [
       ),
   },
   {
-    path: 'fabric',
-    loadComponent: () => import('./pages/fabric/fabric').then((p) => p.Fabric),
-  },
-  {
     path: 'garment-accessory',
     loadComponent: () =>
       import('./pages/garment-accessory/garment-accessory').then((p) => p.GarmentAccessory),
