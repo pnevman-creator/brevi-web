@@ -8,7 +8,7 @@
   },
 
   api: {
-    baseUrl: 'https://api.brevi.com.ua/admin',
+    baseUrl: 'https://brevierp-api-443622778364.europe-central2.run.app',
     timeoutMs: 15000,
   },
 
