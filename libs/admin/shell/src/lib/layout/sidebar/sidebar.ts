@@ -69,7 +69,11 @@ export class Sidebar {
       icon: 'pi pi-bookmark',
       items: [
         { label: 'Товари', icon: 'pi pi-box' },
-        { label: 'Тканина та фурнітура', icon: 'pi pi-palette' },
+        {
+          label: 'Тканина та фурнітура',
+          icon: 'pi pi-palette',
+          routerLink: '/references/garment-accessory',
+        },
         { label: 'Прорахунки', icon: 'pi pi-calculator' },
         { label: 'Додаткові довідники', icon: 'pi pi-list' },
       ],

@@ -2,30 +2,30 @@ import { Route } from '@angular/router';
 
 export const referencesRoutes: Route[] = [
   {
-    path: 'additional-reference',
+    path: 'references/additional-reference',
     loadComponent: () =>
       import('./pages/additional-reference/additional-reference').then(
         (p) => p.AdditionalReference,
       ),
   },
   {
-    path: 'garment-accessory',
+    path: 'references/garment-accessory',
     loadComponent: () =>
       import('./pages/garment-accessory/garment-accessory').then((p) => p.GarmentAccessory),
   },
   {
-    path: 'garment-part',
+    path: 'references/garment-part',
     loadComponent: () => import('./pages/garment-part/garment-part').then((p) => p.GarmentPart),
   },
   {
-    path: 'garment-part-operation',
+    path: 'references/garment-part-operation',
     loadComponent: () =>
       import('./pages/garment-part-operation/garment-part-operation').then(
         (p) => p.GarmentPartOperation,
       ),
   },
   {
-    path: 'supplier',
+    path: 'references/supplier',
     loadComponent: () => import('./pages/supplier/supplier').then((p) => p.Supplier),
   },
 ];
