@@ -8,7 +8,7 @@
   },
 
   api: {
-    baseUrl: 'http://localhost:7230/admin',
+    baseUrl: 'https://localhost:7142',
   },
 
   features: {
