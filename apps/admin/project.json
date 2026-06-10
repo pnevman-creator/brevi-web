@@ -73,6 +73,13 @@
         "staticFilePath": "dist/apps/admin/browser",
         "spa": true
       }
+    },
+    "build-cloudflare": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["npx nx build admin --outputMode=static"],
+        "parallel": false
+      }
     }
   }
 }
