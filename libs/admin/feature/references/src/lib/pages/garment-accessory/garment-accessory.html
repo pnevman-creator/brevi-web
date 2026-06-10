@@ -1,1 +1,86 @@
-<p>garment-accessory works!</p>
+<section class="reference-page">
+  <header class="reference-page__header">
+    <div>
+      <p class="reference-page__eyebrow">References</p>
+      <h1>Garment accessories</h1>
+    </div>
+  </header>
+
+  <div class="reference-page__grid">
+    <section class="reference-table">
+      <header class="reference-table__header">
+        <h2>Fabrics</h2>
+
+        @if (store.fabrics.isLoading()) {
+          <span class="reference-table__status">Loading</span>
+        }
+      </header>
+
+      @if (store.fabrics.error()) {
+        <p class="reference-table__error">Could not load fabrics.</p>
+      } @else {
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Provider</th>
+              <th>Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (fabric of store.fabrics.value(); track fabric.id) {
+              <tr>
+                <td>{{ fabric.id }}</td>
+                <td>{{ fabric.name }}</td>
+                <td>{{ fabric.providerName }}</td>
+                <td>{{ fabric.price }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4">No fabrics found.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+
+    <section class="reference-table">
+      <header class="reference-table__header">
+        <h2>Accessories</h2>
+
+        @if (store.garmentAccessories.isLoading()) {
+          <span class="reference-table__status">Loading</span>
+        }
+      </header>
+
+      @if (store.garmentAccessories.error()) {
+        <p class="reference-table__error">Could not load accessories.</p>
+      } @else {
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (accessory of store.garmentAccessories.value(); track accessory.id) {
+              <tr>
+                <td>{{ accessory.id }}</td>
+                <td>{{ accessory.name }}</td>
+                <td>{{ accessory.price }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="3">No accessories found.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+  </div>
+</section>
