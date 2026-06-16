@@ -1,1 +1,231 @@
-<p>supplier works!</p>
+<section class="flex flex-col gap-6 p-6 md:p-8">
+  <p-toast />
+
+  <header class="flex flex-col gap-1">
+    <p class="text-sm font-medium text-surface-500 dark:text-surface-400">Довідники</p>
+    <h1 class="text-2xl font-semibold text-surface-900 dark:text-surface-0">Постачальники</h1>
+  </header>
+
+  <div class="flex flex-col gap-4">
+    <div
+      class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-surface-200 bg-surface-50 px-4 py-3 dark:border-surface-200 dark:bg-surface-50"
+    >
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          pButton
+          type="button"
+          icon="pi pi-plus"
+          label="Додати"
+          size="small"
+          (click)="store.beginSupplierCreate()"
+        ></button>
+        <button
+          pButton
+          type="button"
+          icon="pi pi-trash"
+          label="Видалити вибране"
+          severity="danger"
+          outlined
+          size="small"
+          [disabled]="!store.selectedSuppliers.length"
+          (click)="store.deleteSelectedSuppliers()"
+        ></button>
+      </div>
+      <span class="text-sm text-surface-500 dark:text-surface-400">
+        Вибрано: {{ store.selectedSuppliers.length }}
+      </span>
+    </div>
+
+    @if (store.supplierDraft) {
+      <div
+        class="rounded-xl border border-surface-200 bg-white p-4 dark:border-surface-200 dark:bg-white"
+      >
+        <div class="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <p class="text-sm font-medium text-surface-500 dark:text-surface-400">Нова позиція</p>
+            <h2 class="text-lg font-semibold text-surface-900 dark:text-surface-0">
+              Створення постачальника
+            </h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-times"
+              label="Скасувати"
+              text
+              severity="secondary"
+              size="small"
+              (click)="store.cancelSupplierCreate()"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-check"
+              label="Зберегти"
+              size="small"
+              (click)="store.saveSupplierDraft()"
+            ></button>
+          </div>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-3">
+          <label class="flex flex-col gap-2">
+            <span class="text-sm font-medium text-surface-600 dark:text-surface-300">ID</span>
+            <input
+              pInputText
+              type="number"
+              min="1"
+              step="1"
+              [(ngModel)]="store.supplierDraft.id"
+              class="h-10 w-full text-sm"
+            />
+          </label>
+
+          <label class="flex flex-col gap-2">
+            <span class="text-sm font-medium text-surface-600 dark:text-surface-300">Назва</span>
+            <input
+              pInputText
+              type="text"
+              [(ngModel)]="store.supplierDraft.name"
+              class="h-10 w-full text-sm"
+            />
+          </label>
+
+          <label class="flex flex-col gap-2">
+            <span class="text-sm font-medium text-surface-600 dark:text-surface-300"
+              >Посилання</span
+            >
+            <input
+              pInputText
+              type="text"
+              [(ngModel)]="store.supplierDraft.link"
+              class="h-10 w-full text-sm"
+            />
+          </label>
+        </div>
+      </div>
+    }
+
+    @if (store.suppliers.isLoading()) {
+      <div class="flex items-center justify-center px-6 py-12 text-sm text-surface-500">
+        Завантаження...
+      </div>
+    } @else if (store.suppliers.error()) {
+      <div class="px-6 py-12 text-sm text-red-500">Не вдалося завантажити постачальників.</div>
+    } @else {
+      <p-table
+        [value]="store.suppliers.value()"
+        [(selection)]="store.selectedSuppliers"
+        dataKey="id"
+        editMode="row"
+        selectionMode="multiple"
+        styleClass="p-datatable-sm text-sm"
+        [tableStyle]="{ 'min-width': '48rem' }"
+        stripedRows
+        rowHover
+      >
+        <ng-template #header>
+          <tr>
+            <th class="w-12 px-3 py-2">
+              <p-tableHeaderCheckbox />
+            </th>
+            <th class="w-20 px-3 py-2">ID</th>
+            <th class="px-3 py-2">Назва</th>
+            <th class="px-3 py-2">Посилання</th>
+            <th class="w-28 px-3 py-2"></th>
+          </tr>
+        </ng-template>
+
+        <ng-template #body let-supplier let-editing="editing">
+          <tr [pEditableRow]="supplier">
+            <td class="px-3 py-2">
+              <p-tableCheckbox [value]="supplier" />
+            </td>
+            <td class="px-3 py-2 font-medium text-surface-900 dark:text-surface-0">
+              {{ supplier.id }}
+            </td>
+            <td class="px-3 py-2">
+              <p-cellEditor>
+                <ng-template #input>
+                  <input
+                    pInputText
+                    type="text"
+                    [(ngModel)]="supplier.name"
+                    class="h-9 w-full text-sm"
+                  />
+                </ng-template>
+                <ng-template #output>
+                  {{ supplier.name }}
+                </ng-template>
+              </p-cellEditor>
+            </td>
+            <td class="px-3 py-2">
+              <p-cellEditor>
+                <ng-template #input>
+                  <input
+                    pInputText
+                    type="text"
+                    [(ngModel)]="supplier.link"
+                    class="h-9 w-full text-sm"
+                  />
+                </ng-template>
+                <ng-template #output>
+                  {{ supplier.link }}
+                </ng-template>
+              </p-cellEditor>
+            </td>
+            <td class="px-3 py-2">
+              <div class="flex items-center justify-end gap-2">
+                @if (!editing) {
+                  <button
+                    pButton
+                    type="button"
+                    pInitEditableRow
+                    icon="pi pi-pencil"
+                    text
+                    rounded
+                    severity="secondary"
+                    size="small"
+                    (click)="store.beginSupplierEdit(supplier)"
+                  ></button>
+                } @else {
+                  <button
+                    pButton
+                    type="button"
+                    pSaveEditableRow
+                    icon="pi pi-check"
+                    text
+                    rounded
+                    severity="secondary"
+                    size="small"
+                    (click)="store.saveSupplier(supplier)"
+                  ></button>
+                  <button
+                    pButton
+                    type="button"
+                    pCancelEditableRow
+                    icon="pi pi-times"
+                    text
+                    rounded
+                    severity="secondary"
+                    size="small"
+                    (click)="store.cancelSupplierEdit(supplier)"
+                  ></button>
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="5" class="px-6 py-10 text-center text-sm text-surface-500">
+              Дані не знайдено.
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+  </div>
+</section>
