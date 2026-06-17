@@ -1,50 +1,38 @@
 import { DOCUMENT } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { MessageService } from 'primeng/api';
-import { firstValueFrom, Observable, tap } from 'rxjs';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { DialogService } from 'primeng/dynamicdialog';
+import { firstValueFrom } from 'rxjs';
 
 import { FabricsApi } from '../../data-access/fabrics/fabrics.api';
 import { GarmentAccessoriesApi } from '../../data-access/garment-accessories/garment-accessories.api';
+import { FabricDialogComponent } from '../../dialogs/fabric-dialog/fabric-dialog.component';
+import { GarmentAccessoryDialogComponent } from '../../dialogs/garment-accessory-dialog/garment-accessory-dialog.component';
 
-import type {
-  CreateFabricRequest,
-  FabricRow,
-  UpdateFabricRequest,
-} from '../../data-access/fabrics/fabrics.models';
-import type {
-  CreateGarmentAccessoryRequest,
-  GarmentAccessoryRow,
-  UpdateGarmentAccessoryRequest,
-} from '../../data-access/garment-accessories/garment-accessories.models';
+import type { FabricRow } from '../../data-access/fabrics/fabrics.models';
+import type { GarmentAccessoryRow } from '../../data-access/garment-accessories/garment-accessories.models';
 import type { SupplierRow } from '../../data-access/suppliers/suppliers.models';
-
-interface FabricDraft {
-  id: number;
-  name: string;
-  price: number | null;
-  providerName: string;
-}
-
-interface GarmentAccessoryDraft {
-  id: number;
-  name: string;
-  price: number | null;
-}
+import type {
+  FabricDialogData,
+  FabricDialogDraft,
+  FabricDialogResult,
+  GarmentAccessoryDialogData,
+  GarmentAccessoryDialogDraft,
+  GarmentAccessoryDialogResult,
+} from '../../dialogs/reference-dialog.models';
 
 @Injectable()
 export class GarmentAccessoryPageStore {
   private readonly fabricsApi = inject(FabricsApi);
   private readonly garmentAccessoriesApi = inject(GarmentAccessoriesApi);
+  private readonly dialogService = inject(DialogService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
   private readonly document = inject(DOCUMENT);
-  private readonly clonedFabrics: Record<number, FabricRow> = {};
-  private readonly clonedGarmentAccessories: Record<number, GarmentAccessoryRow> = {};
 
   selectedFabrics: FabricRow[] = [];
   selectedGarmentAccessories: GarmentAccessoryRow[] = [];
-  fabricDraft: FabricDraft | null = null;
-  garmentAccessoryDraft: GarmentAccessoryDraft | null = null;
 
   readonly fabrics = httpResource<FabricRow[]>(() => '/api/reference/fabrics', {
     defaultValue: [],
@@ -61,73 +49,151 @@ export class GarmentAccessoryPageStore {
     defaultValue: [],
   });
 
-  beginFabricEdit(fabric: FabricRow): void {
-    this.clonedFabrics[fabric.id] = { ...fabric };
-  }
+  async openFabricCreateDialog(): Promise<void> {
+    const draft = await this.openFabricDialog({
+      mode: 'create',
+      draft: {
+        id: this.getNextFabricId(),
+        name: '',
+        price: null,
+        providerName: '',
+      },
+      suppliers: this.suppliers.value(),
+    });
 
-  beginGarmentAccessoryEdit(accessory: GarmentAccessoryRow): void {
-    this.clonedGarmentAccessories[accessory.id] = { ...accessory };
-  }
-
-  beginFabricCreate(): void {
-    this.fabricDraft = {
-      id: this.getNextFabricId(),
-      name: '',
-      price: null,
-      providerName: '',
-    };
-  }
-
-  cancelFabricCreate(): void {
-    this.fabricDraft = null;
-  }
-
-  beginGarmentAccessoryCreate(): void {
-    this.garmentAccessoryDraft = {
-      id: this.getNextGarmentAccessoryId(),
-      name: '',
-      price: null,
-    };
-  }
-
-  cancelGarmentAccessoryCreate(): void {
-    this.garmentAccessoryDraft = null;
-  }
-
-  async saveFabric(fabric: FabricRow): Promise<void> {
-    try {
-      await firstValueFrom(
-        this.updateFabric(fabric.id, {
-          name: fabric.name,
-          price: Number(fabric.price),
-          providerName: fabric.providerName,
-        }),
-      );
-
-      delete this.clonedFabrics[fabric.id];
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Збережено',
-        detail: `Тканину №${fabric.id} оновлено.`,
-      });
-    } catch {
-      this.restoreFabric(fabric.id);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Помилка збереження',
-        detail: `Тканину №${fabric.id} не збережено.`,
-      });
+    if (!draft) {
+      return;
     }
+
+    await this.createFabric(draft.draft);
   }
 
-  async saveFabricDraft(): Promise<void> {
+  async openFabricEditDialog(fabric: FabricRow): Promise<void> {
+    const draft = await this.openFabricDialog({
+      mode: 'edit',
+      draft: {
+        id: fabric.id,
+        name: fabric.name,
+        price: fabric.price,
+        providerName: fabric.providerName,
+      },
+      suppliers: this.suppliers.value(),
+    });
+
+    if (!draft) {
+      return;
+    }
+
+    await this.updateFabric(draft.originalId ?? fabric.id, draft.draft);
+  }
+
+  async openGarmentAccessoryCreateDialog(): Promise<void> {
+    const draft = await this.openGarmentAccessoryDialog({
+      mode: 'create',
+      draft: {
+        id: this.getNextGarmentAccessoryId(),
+        name: '',
+        price: null,
+      },
+    });
+
+    if (!draft) {
+      return;
+    }
+
+    await this.createGarmentAccessory(draft.draft);
+  }
+
+  async openGarmentAccessoryEditDialog(accessory: GarmentAccessoryRow): Promise<void> {
+    const draft = await this.openGarmentAccessoryDialog({
+      mode: 'edit',
+      draft: {
+        id: accessory.id,
+        name: accessory.name,
+        price: accessory.price,
+      },
+    });
+
+    if (!draft) {
+      return;
+    }
+
+    await this.updateGarmentAccessory(draft.originalId ?? accessory.id, draft.draft);
+  }
+
+  private openFabricDialog(data: FabricDialogData): Promise<FabricDialogResult | null> {
+    const ref = this.dialogService.open(FabricDialogComponent, {
+      data,
+      header: data.mode === 'create' ? 'Нова тканина' : 'Редагування тканини',
+      modal: true,
+      draggable: false,
+      resizable: false,
+      width: '36rem',
+      breakpoints: { '1199px': '75vw', '575px': '90vw' },
+    })!;
+
+    return firstValueFrom(ref.onClose);
+  }
+
+  private openGarmentAccessoryDialog(
+    data: GarmentAccessoryDialogData,
+  ): Promise<GarmentAccessoryDialogResult | null> {
+    const ref = this.dialogService.open(GarmentAccessoryDialogComponent, {
+      data,
+      header: data.mode === 'create' ? 'Нова фурнітура' : 'Редагування фурнітури',
+      modal: true,
+      draggable: false,
+      resizable: false,
+      width: '32rem',
+      breakpoints: { '1199px': '75vw', '575px': '90vw' },
+    })!;
+
+    return firstValueFrom(ref.onClose);
+  }
+
+  confirmDeleteFabrics(fabrics: FabricRow[]): void {
+    if (!fabrics.length) {
+      return;
+    }
+
+    const selectedIds = fabrics.map((fabric) => fabric.id);
+    this.confirmationService.confirm({
+      header: 'Підтвердження видалення',
+      message: `Ви впевнені, що хочете видалити ${this.formatDeletionCount(selectedIds.length)}?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Видалити',
+      rejectLabel: 'Скасувати',
+      accept: () => {
+        void this.deleteFabricsByIds(selectedIds);
+      },
+    });
+  }
+
+  confirmDeleteGarmentAccessories(accessories: GarmentAccessoryRow[]): void {
+    if (!accessories.length) {
+      return;
+    }
+
+    const selectedIds = accessories.map((accessory) => accessory.id);
+    this.confirmationService.confirm({
+      header: 'Підтвердження видалення',
+      message: `Ви впевнені, що хочете видалити ${this.formatDeletionCount(selectedIds.length)}?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Видалити',
+      rejectLabel: 'Скасувати',
+      accept: () => {
+        void this.deleteGarmentAccessoriesByIds(selectedIds);
+      },
+    });
+  }
+
+  private async createFabric(draft: FabricDialogDraft): Promise<void> {
     if (
-      !this.fabricDraft ||
-      !Number.isFinite(this.fabricDraft.id) ||
-      this.fabricDraft.id <= 0 ||
-      !this.fabricDraft.name.trim() ||
-      this.fabricDraft.price === null ||
-      !this.fabricDraft.providerName.trim()
+      !Number.isFinite(draft.id) ||
+      draft.id <= 0 ||
+      !draft.name.trim() ||
+      draft.price === null ||
+      !draft.providerName.trim()
     ) {
       this.messageService.add({
         severity: 'error',
@@ -140,19 +206,18 @@ export class GarmentAccessoryPageStore {
     try {
       await firstValueFrom(
         this.fabricsApi.create({
-          id: Number(this.fabricDraft.id),
-          name: this.fabricDraft.name,
-          price: this.fabricDraft.price,
-          providerName: this.fabricDraft.providerName,
+          id: Number(draft.id),
+          name: draft.name,
+          price: draft.price,
+          providerName: draft.providerName,
         }),
       );
 
-      this.fabricDraft = null;
       this.reloadFabricsPreservingScroll();
       this.messageService.add({
         severity: 'success',
         summary: 'Збережено',
-        detail: 'Тканину створено.',
+        detail: `Тканину №${draft.id} створено.`,
       });
     } catch {
       this.messageService.add({
@@ -163,43 +228,48 @@ export class GarmentAccessoryPageStore {
     }
   }
 
-  cancelFabricEdit(fabric: FabricRow): void {
-    this.restoreFabric(fabric.id);
-  }
-
-  async saveGarmentAccessory(accessory: GarmentAccessoryRow): Promise<void> {
-    try {
-      await firstValueFrom(
-        this.updateGarmentAccessory(accessory.id, {
-          name: accessory.name,
-          price: Number(accessory.price),
-        }),
-      );
-
-      delete this.clonedGarmentAccessories[accessory.id];
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Збережено',
-        detail: `Фурнітуру №${accessory.id} оновлено.`,
-      });
-    } catch {
-      this.restoreGarmentAccessory(accessory.id);
+  private async updateFabric(id: number, draft: FabricDialogDraft): Promise<void> {
+    if (
+      !Number.isFinite(id) ||
+      id <= 0 ||
+      !draft.name.trim() ||
+      draft.price === null ||
+      !draft.providerName.trim()
+    ) {
       this.messageService.add({
         severity: 'error',
         summary: 'Помилка збереження',
-        detail: `Фурнітуру №${accessory.id} не збережено.`,
+        detail: 'Заповніть усі поля тканини перед збереженням.',
+      });
+      return;
+    }
+
+    try {
+      await firstValueFrom(
+        this.fabricsApi.update(id, {
+          name: draft.name,
+          price: draft.price,
+          providerName: draft.providerName,
+        }),
+      );
+
+      this.reloadFabricsPreservingScroll();
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Збережено',
+        detail: `Тканину №${id} оновлено.`,
+      });
+    } catch {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Помилка збереження',
+        detail: `Тканину №${id} не збережено.`,
       });
     }
   }
 
-  async saveGarmentAccessoryDraft(): Promise<void> {
-    if (
-      !this.garmentAccessoryDraft ||
-      !Number.isFinite(this.garmentAccessoryDraft.id) ||
-      this.garmentAccessoryDraft.id <= 0 ||
-      !this.garmentAccessoryDraft.name.trim() ||
-      this.garmentAccessoryDraft.price === null
-    ) {
+  private async createGarmentAccessory(draft: GarmentAccessoryDialogDraft): Promise<void> {
+    if (!Number.isFinite(draft.id) || draft.id <= 0 || !draft.name.trim() || draft.price === null) {
       this.messageService.add({
         severity: 'error',
         summary: 'Помилка збереження',
@@ -211,18 +281,17 @@ export class GarmentAccessoryPageStore {
     try {
       await firstValueFrom(
         this.garmentAccessoriesApi.create({
-          id: Number(this.garmentAccessoryDraft.id),
-          name: this.garmentAccessoryDraft.name,
-          price: this.garmentAccessoryDraft.price,
+          id: Number(draft.id),
+          name: draft.name,
+          price: draft.price,
         }),
       );
 
-      this.garmentAccessoryDraft = null;
       this.reloadGarmentAccessoriesPreservingScroll();
       this.messageService.add({
         severity: 'success',
         summary: 'Збережено',
-        detail: 'Фурнітуру створено.',
+        detail: `Фурнітуру №${draft.id} створено.`,
       });
     } catch {
       this.messageService.add({
@@ -233,56 +302,43 @@ export class GarmentAccessoryPageStore {
     }
   }
 
-  cancelGarmentAccessoryEdit(accessory: GarmentAccessoryRow): void {
-    this.restoreGarmentAccessory(accessory.id);
-  }
-
-  createFabric(request: CreateFabricRequest): Observable<number> {
-    return this.fabricsApi.create(request).pipe(tap(() => this.reloadFabricsPreservingScroll()));
-  }
-
-  updateFabric(id: number, request: UpdateFabricRequest): Observable<void> {
-    return this.fabricsApi
-      .update(id, request)
-      .pipe(tap(() => this.reloadFabricsPreservingScroll()));
-  }
-
-  deleteFabric(id: number): Observable<void> {
-    return this.fabricsApi.delete(id).pipe(tap(() => this.reloadFabricsPreservingScroll()));
-  }
-
-  createGarmentAccessory(request: CreateGarmentAccessoryRequest): Observable<number> {
-    return this.garmentAccessoriesApi
-      .create(request)
-      .pipe(tap(() => this.reloadGarmentAccessoriesPreservingScroll()));
-  }
-
-  updateGarmentAccessory(id: number, request: UpdateGarmentAccessoryRequest): Observable<void> {
-    return this.garmentAccessoriesApi
-      .update(id, request)
-      .pipe(tap(() => this.reloadGarmentAccessoriesPreservingScroll()));
-  }
-
-  deleteGarmentAccessory(id: number): Observable<void> {
-    return this.garmentAccessoriesApi
-      .delete(id)
-      .pipe(tap(() => this.reloadGarmentAccessoriesPreservingScroll()));
-  }
-
-  private getNextFabricId(): number {
-    return this.getNextId(this.fabrics.value());
-  }
-
-  private getNextGarmentAccessoryId(): number {
-    return this.getNextId(this.garmentAccessories.value());
-  }
-
-  async deleteSelectedFabrics(): Promise<void> {
-    if (!this.selectedFabrics.length) {
+  private async updateGarmentAccessory(
+    id: number,
+    draft: GarmentAccessoryDialogDraft,
+  ): Promise<void> {
+    if (!Number.isFinite(id) || id <= 0 || !draft.name.trim() || draft.price === null) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Помилка збереження',
+        detail: 'Заповніть усі поля фурнітури перед збереженням.',
+      });
       return;
     }
 
-    const selectedIds = this.selectedFabrics.map((fabric) => fabric.id);
+    try {
+      await firstValueFrom(
+        this.garmentAccessoriesApi.update(id, {
+          name: draft.name,
+          price: draft.price,
+        }),
+      );
+
+      this.reloadGarmentAccessoriesPreservingScroll();
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Збережено',
+        detail: `Фурнітуру №${id} оновлено.`,
+      });
+    } catch {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Помилка збереження',
+        detail: `Фурнітуру №${id} не збережено.`,
+      });
+    }
+  }
+
+  private async deleteFabricsByIds(selectedIds: number[]): Promise<void> {
     const results = await Promise.allSettled(
       selectedIds.map((id) => firstValueFrom(this.fabricsApi.delete(id))),
     );
@@ -301,12 +357,7 @@ export class GarmentAccessoryPageStore {
     });
   }
 
-  async deleteSelectedGarmentAccessories(): Promise<void> {
-    if (!this.selectedGarmentAccessories.length) {
-      return;
-    }
-
-    const selectedIds = this.selectedGarmentAccessories.map((accessory) => accessory.id);
+  private async deleteGarmentAccessoriesByIds(selectedIds: number[]): Promise<void> {
     const results = await Promise.allSettled(
       selectedIds.map((id) => firstValueFrom(this.garmentAccessoriesApi.delete(id))),
     );
@@ -325,44 +376,42 @@ export class GarmentAccessoryPageStore {
     });
   }
 
-  private restoreFabric(id: number): void {
-    const clone = this.clonedFabrics[id];
-
-    if (!clone) {
-      return;
-    }
-
-    const fabrics = this.fabrics.value();
-    const index = fabrics.findIndex((fabric) => fabric.id === id);
-
-    if (index !== -1) {
-      fabrics[index] = clone;
-    }
-
-    delete this.clonedFabrics[id];
+  private getNextFabricId(): number {
+    return this.getNextId(this.fabrics.value());
   }
 
-  private restoreGarmentAccessory(id: number): void {
-    const clone = this.clonedGarmentAccessories[id];
-
-    if (!clone) {
-      return;
-    }
-
-    const garmentAccessories = this.garmentAccessories.value();
-    const index = garmentAccessories.findIndex((accessory) => accessory.id === id);
-
-    if (index !== -1) {
-      garmentAccessories[index] = clone;
-    }
-
-    delete this.clonedGarmentAccessories[id];
+  private getNextGarmentAccessoryId(): number {
+    return this.getNextId(this.garmentAccessories.value());
   }
 
   private getNextId(items: Array<{ id: number }>): number {
     const maxId = items.reduce((currentMax, item) => Math.max(currentMax, item.id), 0);
 
     return maxId + 1;
+  }
+
+  private formatDeletionCount(count: number): string {
+    return `${count} ${this.getPositionNoun(count)}`;
+  }
+
+  private getPositionNoun(count: number): string {
+    const lastTwoDigits = count % 100;
+
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+      return 'позицій';
+    }
+
+    const lastDigit = count % 10;
+
+    if (lastDigit === 1) {
+      return 'позицію';
+    }
+
+    if (lastDigit >= 2 && lastDigit <= 4) {
+      return 'позиції';
+    }
+
+    return 'позицій';
   }
 
   private reloadFabricsPreservingScroll(): void {

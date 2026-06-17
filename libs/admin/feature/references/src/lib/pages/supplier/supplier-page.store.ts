@@ -1,85 +1,106 @@
 import { DOCUMENT } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { DialogService } from 'primeng/dynamicdialog';
 import { firstValueFrom } from 'rxjs';
 
 import { SuppliersApi } from '../../data-access/suppliers/suppliers.api';
+import { SupplierDialogComponent } from '../../dialogs/supplier-dialog/supplier-dialog.component';
 
 import type { SupplierRow } from '../../data-access/suppliers/suppliers.models';
-
-interface SupplierDraft {
-  id: number;
-  name: string;
-  link: string;
-}
+import type {
+  SupplierDialogData,
+  SupplierDialogDraft,
+  SupplierDialogResult,
+} from '../../dialogs/reference-dialog.models';
 
 @Injectable()
 export class SupplierPageStore {
   private readonly suppliersApi = inject(SuppliersApi);
+  private readonly dialogService = inject(DialogService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
   private readonly document = inject(DOCUMENT);
-  private readonly clonedSuppliers: Record<number, SupplierRow> = {};
 
   selectedSuppliers: SupplierRow[] = [];
-  supplierDraft: SupplierDraft | null = null;
 
   readonly suppliers = httpResource<SupplierRow[]>(() => '/api/reference/suppliers', {
     defaultValue: [],
   });
 
-  beginSupplierEdit(supplier: SupplierRow): void {
-    this.clonedSuppliers[supplier.id] = { ...supplier };
-  }
+  async openSupplierCreateDialog(): Promise<void> {
+    const draft = await this.openSupplierDialog({
+      mode: 'create',
+      draft: {
+        id: this.getNextSupplierId(),
+        name: '',
+        link: '',
+        contactPerson: '',
+        phoneNumber: '',
+      },
+    });
 
-  beginSupplierCreate(): void {
-    this.supplierDraft = {
-      id: this.getNextSupplierId(),
-      name: '',
-      link: '',
-    };
-  }
-
-  cancelSupplierCreate(): void {
-    this.supplierDraft = null;
-  }
-
-  async saveSupplier(supplier: SupplierRow): Promise<void> {
-    try {
-      await firstValueFrom(
-        this.suppliersApi.update(supplier.id, {
-          name: supplier.name,
-          link: supplier.link,
-        }),
-      );
-
-      delete this.clonedSuppliers[supplier.id];
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Збережено',
-        detail: `Постачальника №${supplier.id} оновлено.`,
-      });
-    } catch {
-      this.restoreSupplier(supplier.id);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Помилка збереження',
-        detail: `Постачальника №${supplier.id} не збережено.`,
-      });
+    if (!draft) {
+      return;
     }
+
+    await this.createSupplier(draft.draft);
   }
 
-  cancelSupplierEdit(supplier: SupplierRow): void {
-    this.restoreSupplier(supplier.id);
+  async openSupplierEditDialog(supplier: SupplierRow): Promise<void> {
+    const draft = await this.openSupplierDialog({
+      mode: 'edit',
+      draft: {
+        id: supplier.id,
+        name: supplier.name,
+        link: supplier.link ?? '',
+        contactPerson: supplier.contactPerson ?? '',
+        phoneNumber: supplier.phoneNumber ?? '',
+      },
+    });
+
+    if (!draft) {
+      return;
+    }
+
+    await this.updateSupplier(draft.originalId ?? supplier.id, draft.draft);
   }
 
-  async saveSupplierDraft(): Promise<void> {
-    if (
-      !this.supplierDraft ||
-      !Number.isFinite(this.supplierDraft.id) ||
-      this.supplierDraft.id <= 0 ||
-      !this.supplierDraft.name.trim()
-    ) {
+  private openSupplierDialog(data: SupplierDialogData): Promise<SupplierDialogResult | null> {
+    const ref = this.dialogService.open(SupplierDialogComponent, {
+      data,
+      header: data.mode === 'create' ? 'Нова позиція' : 'Редагування постачальника',
+      modal: true,
+      draggable: false,
+      resizable: false,
+      width: '32rem',
+      breakpoints: { '1199px': '75vw', '575px': '90vw' },
+    })!;
+
+    return firstValueFrom(ref.onClose);
+  }
+
+  confirmDeleteSuppliers(suppliers: SupplierRow[]): void {
+    if (!suppliers.length) {
+      return;
+    }
+
+    const selectedIds = suppliers.map((supplier) => supplier.id);
+    this.confirmationService.confirm({
+      header: 'Підтвердження видалення',
+      message: `Ви впевнені, що хочете видалити ${this.formatDeletionCount(selectedIds.length)}?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Видалити',
+      rejectLabel: 'Скасувати',
+      accept: () => {
+        void this.deleteSuppliersByIds(selectedIds);
+      },
+    });
+  }
+
+  private async createSupplier(draft: SupplierDialogDraft): Promise<void> {
+    if (!Number.isFinite(draft.id) || draft.id <= 0 || !draft.name.trim()) {
       this.messageService.add({
         severity: 'error',
         summary: 'Помилка збереження',
@@ -91,18 +112,19 @@ export class SupplierPageStore {
     try {
       await firstValueFrom(
         this.suppliersApi.create({
-          id: Number(this.supplierDraft.id),
-          name: this.supplierDraft.name,
-          link: this.supplierDraft.link,
+          id: Number(draft.id),
+          name: draft.name,
+          link: draft.link || null,
+          contactPerson: draft.contactPerson || null,
+          phoneNumber: draft.phoneNumber || null,
         }),
       );
 
-      this.supplierDraft = null;
       this.reloadSuppliersPreservingScroll();
       this.messageService.add({
         severity: 'success',
         summary: 'Збережено',
-        detail: 'Постачальника створено.',
+        detail: `Постачальника №${draft.id} створено.`,
       });
     } catch {
       this.messageService.add({
@@ -113,12 +135,42 @@ export class SupplierPageStore {
     }
   }
 
-  async deleteSelectedSuppliers(): Promise<void> {
-    if (!this.selectedSuppliers.length) {
+  private async updateSupplier(id: number, draft: SupplierDialogDraft): Promise<void> {
+    if (!Number.isFinite(id) || id <= 0 || !draft.name.trim()) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Помилка збереження',
+        detail: 'Заповніть назву постачальника перед збереженням.',
+      });
       return;
     }
 
-    const selectedIds = this.selectedSuppliers.map((supplier) => supplier.id);
+    try {
+      await firstValueFrom(
+        this.suppliersApi.update(id, {
+          name: draft.name,
+          link: draft.link || null,
+          contactPerson: draft.contactPerson || null,
+          phoneNumber: draft.phoneNumber || null,
+        }),
+      );
+
+      this.reloadSuppliersPreservingScroll();
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Збережено',
+        detail: `Постачальника №${id} оновлено.`,
+      });
+    } catch {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Помилка збереження',
+        detail: `Постачальника №${id} не збережено.`,
+      });
+    }
+  }
+
+  private async deleteSuppliersByIds(selectedIds: number[]): Promise<void> {
     const results = await Promise.allSettled(
       selectedIds.map((id) => firstValueFrom(this.suppliersApi.delete(id))),
     );
@@ -137,29 +189,36 @@ export class SupplierPageStore {
     });
   }
 
-  private restoreSupplier(id: number): void {
-    const clone = this.clonedSuppliers[id];
-
-    if (!clone) {
-      return;
-    }
-
-    const suppliers = this.suppliers.value();
-    const index = suppliers.findIndex((supplier) => supplier.id === id);
-
-    if (index !== -1) {
-      suppliers[index] = clone;
-    }
-
-    delete this.clonedSuppliers[id];
-  }
-
   private getNextSupplierId(): number {
     const maxId = this.suppliers
       .value()
       .reduce((currentMax, supplier) => Math.max(currentMax, supplier.id), 0);
 
     return maxId + 1;
+  }
+
+  private formatDeletionCount(count: number): string {
+    return `${count} ${this.getPositionNoun(count)}`;
+  }
+
+  private getPositionNoun(count: number): string {
+    const lastTwoDigits = count % 100;
+
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+      return 'позицій';
+    }
+
+    const lastDigit = count % 10;
+
+    if (lastDigit === 1) {
+      return 'позицію';
+    }
+
+    if (lastDigit >= 2 && lastDigit <= 4) {
+      return 'позиції';
+    }
+
+    return 'позицій';
   }
 
   private reloadSuppliersPreservingScroll(): void {
