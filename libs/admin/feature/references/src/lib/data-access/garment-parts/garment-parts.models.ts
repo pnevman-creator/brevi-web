@@ -1,22 +1,23 @@
-export interface SupplierRow {
+export interface GarmentPartRow {
   id: number;
   name: string;
-  link: string | null;
+  supplierId: number;
+  supplierName: string;
   contactPerson: string | null;
   phoneNumber: string | null;
 }
 
-export interface CreateSupplierRequest {
+export interface CreateGarmentPartRequest {
   id: number;
   name: string;
-  link: string | null;
+  supplierId: number;
   contactPerson: string | null;
   phoneNumber: string | null;
 }
 
-export interface UpdateSupplierRequest {
+export interface UpdateGarmentPartRequest {
   name: string;
-  link: string | null;
+  supplierId: number;
   contactPerson: string | null;
   phoneNumber: string | null;
 }
