@@ -1,5 +1,6 @@
 <section class="flex flex-col gap-6 p-6 md:p-8">
   <p-toast />
+  <p-contextMenu #additionalReferenceContextMenu [model]="additionalReferenceMenuItems" appendTo="body"></p-contextMenu>
 
   <header class="flex flex-col gap-1">
     <p class="text-sm font-medium text-surface-500 dark:text-surface-400">Довідники</p>
@@ -29,12 +30,11 @@
               <th class="px-3 py-2">Назва</th>
               <th class="whitespace-nowrap px-3 py-2">Ключ</th>
               <th class="whitespace-nowrap px-3 py-2">Значення</th>
-              <th class="px-3 py-2"></th>
             </tr>
           </ng-template>
 
           <ng-template #body let-item>
-            <tr>
+            <tr (contextmenu)="openAdditionalReferenceContextMenu($event, item)">
               <td
                 class="whitespace-nowrap px-3 py-2 font-medium text-surface-900 dark:text-surface-0"
               >
@@ -45,27 +45,12 @@
               <td class="whitespace-nowrap px-3 py-2">
                 {{ formatNumber(item.value) }} {{ item.unit }}
               </td>
-              <td class="whitespace-nowrap px-3 py-2">
-                <div class="flex items-center justify-end gap-2">
-                  <button
-                    pButton
-                    type="button"
-                    text
-                    rounded
-                    severity="secondary"
-                    size="small"
-                    (click)="store.openAdditionalReferenceEditDialog(item)"
-                  >
-                    <i pButtonIcon class="pi pi-pencil"></i>
-                  </button>
-                </div>
-              </td>
             </tr>
           </ng-template>
 
           <ng-template #emptymessage>
             <tr>
-              <td colspan="5" class="px-6 py-10 text-center text-sm text-surface-500">
+              <td colspan="4" class="px-6 py-10 text-center text-sm text-surface-500">
                 Дані не знайдено.
               </td>
             </tr>
