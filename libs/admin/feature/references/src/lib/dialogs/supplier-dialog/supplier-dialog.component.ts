@@ -3,15 +3,17 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
 
 import type { SupplierDialogData, SupplierDialogResult } from '../reference-dialog.models';
 
 @Component({
   selector: 'lib-supplier-dialog',
-  imports: [ButtonModule, FormsModule, InputTextModule],
+  imports: [ButtonModule, FormsModule, InputTextModule, TextareaModule],
   templateUrl: './supplier-dialog.component.html',
 })
 export class SupplierDialogComponent {
+  protected readonly notesMaxLength = 500;
   private readonly ref = inject(DynamicDialogRef);
   protected readonly config = inject(DynamicDialogConfig) as DynamicDialogConfig & {
     data: SupplierDialogData;

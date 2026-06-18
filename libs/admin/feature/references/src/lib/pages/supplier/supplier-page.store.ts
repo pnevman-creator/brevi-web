@@ -8,7 +8,11 @@ import { firstValueFrom } from 'rxjs';
 import { SuppliersApi } from '../../data-access/suppliers/suppliers.api';
 import { SupplierDialogComponent } from '../../dialogs/supplier-dialog/supplier-dialog.component';
 
-import type { SupplierRow } from '../../data-access/suppliers/suppliers.models';
+import type {
+  CreateSupplierRequest,
+  SupplierRow,
+  UpdateSupplierRequest,
+} from '../../data-access/suppliers/suppliers.models';
 import type {
   SupplierDialogData,
   SupplierDialogDraft,
@@ -32,13 +36,7 @@ export class SupplierPageStore {
   async openSupplierCreateDialog(): Promise<void> {
     const draft = await this.openSupplierDialog({
       mode: 'create',
-      draft: {
-        id: this.getNextSupplierId(),
-        name: '',
-        link: '',
-        contactPerson: '',
-        phoneNumber: '',
-      },
+      draft: this.createEmptySupplierDraft(),
     });
 
     if (!draft) {
@@ -51,13 +49,7 @@ export class SupplierPageStore {
   async openSupplierEditDialog(supplier: SupplierRow): Promise<void> {
     const draft = await this.openSupplierDialog({
       mode: 'edit',
-      draft: {
-        id: supplier.id,
-        name: supplier.name,
-        link: supplier.link ?? '',
-        contactPerson: supplier.contactPerson ?? '',
-        phoneNumber: supplier.phoneNumber ?? '',
-      },
+      draft: this.toSupplierDraft(supplier),
     });
 
     if (!draft) {
@@ -110,15 +102,7 @@ export class SupplierPageStore {
     }
 
     try {
-      await firstValueFrom(
-        this.suppliersApi.create({
-          id: Number(draft.id),
-          name: draft.name,
-          link: draft.link || null,
-          contactPerson: draft.contactPerson || null,
-          phoneNumber: draft.phoneNumber || null,
-        }),
-      );
+      await firstValueFrom(this.suppliersApi.create(this.toCreateSupplierRequest(draft)));
 
       this.reloadSuppliersPreservingScroll();
       this.messageService.add({
@@ -146,14 +130,7 @@ export class SupplierPageStore {
     }
 
     try {
-      await firstValueFrom(
-        this.suppliersApi.update(id, {
-          name: draft.name,
-          link: draft.link || null,
-          contactPerson: draft.contactPerson || null,
-          phoneNumber: draft.phoneNumber || null,
-        }),
-      );
+      await firstValueFrom(this.suppliersApi.update(id, this.toUpdateSupplierRequest(draft)));
 
       this.reloadSuppliersPreservingScroll();
       this.messageService.add({
@@ -195,6 +172,49 @@ export class SupplierPageStore {
       .reduce((currentMax, supplier) => Math.max(currentMax, supplier.id), 0);
 
     return maxId + 1;
+  }
+
+  private createEmptySupplierDraft(): SupplierDialogDraft {
+    return {
+      id: this.getNextSupplierId(),
+      name: '',
+      link: '',
+      contactPerson: '',
+      phoneNumber: '',
+      notes: '',
+    };
+  }
+
+  private toSupplierDraft(supplier: SupplierRow): SupplierDialogDraft {
+    return {
+      id: supplier.id,
+      name: supplier.name,
+      link: supplier.link ?? '',
+      contactPerson: supplier.contactPerson ?? '',
+      phoneNumber: supplier.phoneNumber ?? '',
+      notes: supplier.notes ?? '',
+    };
+  }
+
+  private toCreateSupplierRequest(draft: SupplierDialogDraft): CreateSupplierRequest {
+    return {
+      id: Number(draft.id),
+      name: draft.name,
+      link: draft.link || null,
+      contactPerson: draft.contactPerson || null,
+      phoneNumber: draft.phoneNumber || null,
+      notes: draft.notes || null,
+    };
+  }
+
+  private toUpdateSupplierRequest(draft: SupplierDialogDraft): UpdateSupplierRequest {
+    return {
+      name: draft.name,
+      link: draft.link || null,
+      contactPerson: draft.contactPerson || null,
+      phoneNumber: draft.phoneNumber || null,
+      notes: draft.notes || null,
+    };
   }
 
   private formatDeletionCount(count: number): string {
@@ -241,18 +261,15 @@ export class SupplierPageStore {
   }
 
   private restoreMainScrollPosition(position: { top: number; left: number }): void {
-    setTimeout(() => {
+    queueMicrotask(() => {
       const mainElement = this.document.querySelector('main');
 
       if (!(mainElement instanceof HTMLElement)) {
         return;
       }
 
-      mainElement.scrollTo({
-        top: position.top,
-        left: position.left,
-        behavior: 'auto',
-      });
-    }, 0);
+      mainElement.scrollTop = position.top;
+      mainElement.scrollLeft = position.left;
+    });
   }
 }

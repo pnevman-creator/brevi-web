@@ -7,6 +7,7 @@ export interface SupplierDialogDraft {
   link: string;
   contactPerson: string;
   phoneNumber: string;
+  notes: string;
 }
 
 export interface SupplierDialogData {

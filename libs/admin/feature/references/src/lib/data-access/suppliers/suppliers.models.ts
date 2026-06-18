@@ -4,6 +4,7 @@ export interface SupplierRow {
   link: string | null;
   contactPerson: string | null;
   phoneNumber: string | null;
+  notes: string | null;
 }
 
 export interface CreateSupplierRequest {
@@ -12,6 +13,7 @@ export interface CreateSupplierRequest {
   link: string | null;
   contactPerson: string | null;
   phoneNumber: string | null;
+  notes: string | null;
 }
 
 export interface UpdateSupplierRequest {
@@ -19,4 +21,5 @@ export interface UpdateSupplierRequest {
   link: string | null;
   contactPerson: string | null;
   phoneNumber: string | null;
+  notes: string | null;
 }
