@@ -3,22 +3,21 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { InputTextModule } from 'primeng/inputtext';
-import { SelectModule } from 'primeng/select';
 
 import type {
-  GarmentAccessoryDialogData,
-  GarmentAccessoryDialogResult,
-} from '../reference-dialog.models';
+  AdditionalReferenceDialogData,
+  AdditionalReferenceDialogResult,
+} from './additional-reference-dialog.models';
 
 @Component({
-  selector: 'lib-garment-accessory-dialog',
-  imports: [ButtonModule, FormsModule, InputTextModule, SelectModule],
-  templateUrl: './garment-accessory-dialog.component.html',
+  selector: 'lib-additional-reference-dialog',
+  imports: [ButtonModule, FormsModule, InputTextModule],
+  templateUrl: './additional-reference-dialog.component.html',
 })
-export class GarmentAccessoryDialogComponent {
+export class AdditionalReferenceDialogComponent {
   private readonly ref = inject(DynamicDialogRef);
   protected readonly config = inject(DynamicDialogConfig) as DynamicDialogConfig & {
-    data: GarmentAccessoryDialogData;
+    data: AdditionalReferenceDialogData;
   };
 
   protected draft = { ...this.config.data.draft };
@@ -26,12 +25,13 @@ export class GarmentAccessoryDialogComponent {
 
   protected get canSave(): boolean {
     return Boolean(
-      this.draft.name.trim() &&
-      this.draft.price !== null &&
       Number.isFinite(this.draft.id) &&
       this.draft.id > 0 &&
-      Number.isFinite(this.draft.supplierId) &&
-      this.draft.supplierId > 0,
+      this.draft.name.trim() &&
+      this.draft.key.trim() &&
+      this.draft.value !== null &&
+      Number.isFinite(this.draft.value) &&
+      this.draft.unit.trim(),
     );
   }
 
@@ -44,9 +44,9 @@ export class GarmentAccessoryDialogComponent {
       return;
     }
 
-    const result: GarmentAccessoryDialogResult = {
+    const result: AdditionalReferenceDialogResult = {
       originalId: this.isEditMode ? this.config.data.draft.id : null,
-      draft: { ...this.draft },
+      draft: { ...this.draft, value: Number(this.draft.value) },
     };
 
     this.ref.close(result);

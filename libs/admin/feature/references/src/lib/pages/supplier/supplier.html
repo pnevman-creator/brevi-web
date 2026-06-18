@@ -82,23 +82,25 @@
                 <button
                   pButton
                   type="button"
-                  icon="pi pi-pencil"
                   text
                   rounded
                   severity="secondary"
                   size="small"
                   (click)="store.openSupplierEditDialog(supplier)"
-                ></button>
+                >
+                  <i pButtonIcon class="pi pi-pencil"></i>
+                </button>
                 <button
                   pButton
                   type="button"
-                  icon="pi pi-trash"
                   text
                   rounded
                   severity="secondary"
                   size="small"
                   (click)="store.confirmDeleteSuppliers([supplier])"
-                ></button>
+                >
+                  <i pButtonIcon class="pi pi-trash"></i>
+                </button>
               </div>
             </td>
           </tr>

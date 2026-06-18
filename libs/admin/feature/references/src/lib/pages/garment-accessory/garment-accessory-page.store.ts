@@ -94,7 +94,9 @@ export class GarmentAccessoryPageStore {
         id: this.getNextGarmentAccessoryId(),
         name: '',
         price: null,
+        supplierId: this.suppliers.value()[0]?.id ?? 0,
       },
+      suppliers: this.suppliers.value(),
     });
 
     if (!draft) {
@@ -111,7 +113,9 @@ export class GarmentAccessoryPageStore {
         id: accessory.id,
         name: accessory.name,
         price: accessory.price,
+        supplierId: accessory.supplierId,
       },
+      suppliers: this.suppliers.value(),
     });
 
     if (!draft) {
@@ -269,7 +273,14 @@ export class GarmentAccessoryPageStore {
   }
 
   private async createGarmentAccessory(draft: GarmentAccessoryDialogDraft): Promise<void> {
-    if (!Number.isFinite(draft.id) || draft.id <= 0 || !draft.name.trim() || draft.price === null) {
+    if (
+      !Number.isFinite(draft.id) ||
+      draft.id <= 0 ||
+      !draft.name.trim() ||
+      draft.price === null ||
+      !Number.isFinite(draft.supplierId) ||
+      draft.supplierId <= 0
+    ) {
       this.messageService.add({
         severity: 'error',
         summary: 'Помилка збереження',
@@ -284,6 +295,7 @@ export class GarmentAccessoryPageStore {
           id: Number(draft.id),
           name: draft.name,
           price: draft.price,
+          supplierName: this.getSupplierNameById(draft.supplierId),
         }),
       );
 
@@ -306,7 +318,15 @@ export class GarmentAccessoryPageStore {
     id: number,
     draft: GarmentAccessoryDialogDraft,
   ): Promise<void> {
-    if (!Number.isFinite(id) || id <= 0 || !draft.name.trim() || draft.price === null) {
+    if (
+      !Number.isFinite(id) ||
+      id <= 0 ||
+      !draft.name.trim() ||
+      draft.price === null ||
+      !Number.isFinite(draft.supplierId) ||
+      draft.supplierId <= 0 ||
+      !this.getSupplierNameById(draft.supplierId)
+    ) {
       this.messageService.add({
         severity: 'error',
         summary: 'Помилка збереження',
@@ -320,6 +340,7 @@ export class GarmentAccessoryPageStore {
         this.garmentAccessoriesApi.update(id, {
           name: draft.name,
           price: draft.price,
+          supplierName: this.getSupplierNameById(draft.supplierId),
         }),
       );
 
@@ -382,6 +403,10 @@ export class GarmentAccessoryPageStore {
 
   private getNextGarmentAccessoryId(): number {
     return this.getNextId(this.garmentAccessories.value());
+  }
+
+  private getSupplierNameById(supplierId: number): string {
+    return this.suppliers.value().find((supplier) => supplier.id === supplierId)?.name ?? '';
   }
 
   private getNextId(items: Array<{ id: number }>): number {

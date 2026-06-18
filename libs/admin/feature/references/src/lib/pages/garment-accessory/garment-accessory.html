@@ -85,6 +85,7 @@
                   </th>
                   <th class="w-20 px-3 py-2">ID</th>
                   <th class="px-3 py-2">Назва</th>
+                  <th class="w-52 px-3 py-2">Постачальник</th>
                   <th class="w-36 px-3 py-2">Ціна</th>
                   <th class="w-28 px-3 py-2"></th>
                 </tr>
@@ -99,29 +100,32 @@
                     {{ accessory.id }}
                   </td>
                   <td class="px-3 py-2">{{ accessory.name }}</td>
+                  <td class="px-3 py-2">{{ accessory.supplierName || '-' }}</td>
                   <td class="px-3 py-2">{{ accessory.price | number: '1.2-2' }} грн</td>
                   <td class="px-3 py-2">
                     <div class="flex items-center justify-end gap-2">
                       <button
                         pButton
                         type="button"
-                        icon="pi pi-pencil"
                         text
                         rounded
                         severity="secondary"
                         size="small"
                         (click)="store.openGarmentAccessoryEditDialog(accessory)"
-                      ></button>
+                      >
+                        <i pButtonIcon class="pi pi-pencil"></i>
+                      </button>
                       <button
                         pButton
                         type="button"
-                        icon="pi pi-trash"
                         text
                         rounded
                         severity="secondary"
                         size="small"
                         (click)="store.confirmDeleteGarmentAccessories([accessory])"
-                      ></button>
+                      >
+                        <i pButtonIcon class="pi pi-trash"></i>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -129,7 +133,7 @@
 
               <ng-template #emptymessage>
                 <tr>
-                  <td colspan="5" class="px-6 py-10 text-center text-sm text-surface-500">
+                  <td colspan="6" class="px-6 py-10 text-center text-sm text-surface-500">
                     Дані не знайдено.
                   </td>
                 </tr>
@@ -213,23 +217,25 @@
                       <button
                         pButton
                         type="button"
-                        icon="pi pi-pencil"
                         text
                         rounded
                         severity="secondary"
                         size="small"
                         (click)="store.openFabricEditDialog(fabric)"
-                      ></button>
+                      >
+                        <i pButtonIcon class="pi pi-pencil"></i>
+                      </button>
                       <button
                         pButton
                         type="button"
-                        icon="pi pi-trash"
                         text
                         rounded
                         severity="secondary"
                         size="small"
                         (click)="store.confirmDeleteFabrics([fabric])"
-                      ></button>
+                      >
+                        <i pButtonIcon class="pi pi-trash"></i>
+                      </button>
                     </div>
                   </td>
                 </tr>
