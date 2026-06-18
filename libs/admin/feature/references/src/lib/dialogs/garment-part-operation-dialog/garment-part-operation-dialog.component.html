@@ -1,0 +1,72 @@
+<div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-2">
+    <span class="text-sm font-medium text-surface-600 dark:text-surface-300">ID</span>
+    <input
+      id="garment-part-operation-id"
+      pInputText
+      type="number"
+      min="1"
+      step="1"
+      [(ngModel)]="draft.id"
+      [disabled]="isEditMode"
+      class="h-10 w-full text-sm"
+    />
+  </div>
+
+  <div class="flex flex-col gap-2">
+    <span class="text-sm font-medium text-surface-600 dark:text-surface-300">Елемент</span>
+    <p-select
+      [(ngModel)]="draft.garmentPartName"
+      [options]="config.data.garmentParts"
+      optionLabel="name"
+      optionValue="name"
+      placeholder="Оберіть елемент"
+      class="w-full"
+    >
+      <ng-template #selectedItem let-selectedOption>
+        <span class="whitespace-normal break-words leading-5">
+          {{ selectedOption?.name ?? 'Оберіть елемент' }}
+        </span>
+      </ng-template>
+
+      <ng-template #item let-option>
+        <span class="whitespace-normal break-words leading-5">{{ option.name }}</span>
+      </ng-template>
+    </p-select>
+  </div>
+
+  <div class="flex flex-col gap-2">
+    <span class="text-sm font-medium text-surface-600 dark:text-surface-300">Назва</span>
+    <input
+      id="garment-part-operation-name"
+      pInputText
+      type="text"
+      [(ngModel)]="draft.name"
+      class="h-10 w-full text-sm"
+    />
+  </div>
+
+  <div class="flex flex-col gap-2">
+    <span class="text-sm font-medium text-surface-600 dark:text-surface-300">Min</span>
+    <input
+      id="garment-part-operation-min"
+      pInputText
+      type="number"
+      min="0"
+      step="0.01"
+      [(ngModel)]="draft.min"
+      class="h-10 w-full text-sm"
+    />
+  </div>
+
+  <div class="flex items-center justify-end gap-2 pt-2">
+    <button pButton type="button" text severity="secondary" size="small" (click)="cancel()">
+      <i pButtonIcon class="pi pi-times"></i>
+      <span pButtonLabel>Скасувати</span>
+    </button>
+    <button pButton type="button" size="small" [disabled]="!canSave" (click)="save()">
+      <i pButtonIcon class="pi pi-check"></i>
+      <span pButtonLabel>Зберегти</span>
+    </button>
+  </div>
+</div>

@@ -1,3 +1,4 @@
+import type { GarmentPartRow } from '../data-access/garment-parts/garment-parts.models';
 import type { SupplierRow } from '../data-access/suppliers/suppliers.models';
 
 export interface SupplierDialogDraft {
@@ -21,20 +22,34 @@ export interface SupplierDialogResult {
 export interface GarmentPartDialogDraft {
   id: number;
   name: string;
-  supplierId: number;
-  contactPerson: string;
-  phoneNumber: string;
 }
 
 export interface GarmentPartDialogData {
   mode: 'create' | 'edit';
   draft: GarmentPartDialogDraft;
-  suppliers: SupplierRow[];
 }
 
 export interface GarmentPartDialogResult {
   originalId: number | null;
   draft: GarmentPartDialogDraft;
+}
+
+export interface GarmentPartOperationDialogDraft {
+  id: number;
+  garmentPartName: string;
+  name: string;
+  min: number | null;
+}
+
+export interface GarmentPartOperationDialogData {
+  mode: 'create' | 'edit';
+  draft: GarmentPartOperationDialogDraft;
+  garmentParts: GarmentPartRow[];
+}
+
+export interface GarmentPartOperationDialogResult {
+  originalId: number | null;
+  draft: GarmentPartOperationDialogDraft;
 }
 
 export interface FabricDialogDraft {
@@ -59,11 +74,13 @@ export interface GarmentAccessoryDialogDraft {
   id: number;
   name: string;
   price: number | null;
+  supplierId: number;
 }
 
 export interface GarmentAccessoryDialogData {
   mode: 'create' | 'edit';
   draft: GarmentAccessoryDialogDraft;
+  suppliers: SupplierRow[];
 }
 
 export interface GarmentAccessoryDialogResult {
