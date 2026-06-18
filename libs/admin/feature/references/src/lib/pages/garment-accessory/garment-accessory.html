@@ -76,10 +76,15 @@
           } @else {
             <p-table
               [value]="store.garmentAccessories.value()"
+              [contextMenu]="garmentAccessoryContextMenu"
+              [(contextMenuSelection)]="activeGarmentAccessory"
+              contextMenuSelectionMode="separate"
               [(selection)]="store.selectedGarmentAccessories"
               dataKey="id"
               selectionMode="multiple"
               class="p-datatable-sm text-sm"
+              [scrollable]="true"
+              scrollHeight="calc(100vh - 22rem)"
               [tableStyle]="{ 'min-width': '42rem' }"
               stripedRows
               rowHover
@@ -96,8 +101,8 @@
                 </tr>
               </ng-template>
 
-              <ng-template #body let-accessory>
-                <tr (contextmenu)="openGarmentAccessoryContextMenu($event, accessory)">
+              <ng-template #body let-accessory let-rowIndex="rowIndex">
+                <tr [pContextMenuRow]="accessory" [pContextMenuRowIndex]="rowIndex">
                   <td class="px-3 py-2">
                     <p-tableCheckbox [value]="accessory" />
                   </td>
@@ -159,10 +164,15 @@
           } @else {
             <p-table
               [value]="store.fabrics.value()"
+              [contextMenu]="fabricContextMenu"
+              [(contextMenuSelection)]="activeFabric"
+              contextMenuSelectionMode="separate"
               [(selection)]="store.selectedFabrics"
               dataKey="id"
               selectionMode="multiple"
               class="p-datatable-sm text-sm"
+              [scrollable]="true"
+              scrollHeight="calc(100vh - 22rem)"
               [tableStyle]="{ 'min-width': '48rem' }"
               stripedRows
               rowHover
@@ -179,8 +189,8 @@
                 </tr>
               </ng-template>
 
-              <ng-template #body let-fabric>
-                <tr (contextmenu)="openFabricContextMenu($event, fabric)">
+              <ng-template #body let-fabric let-rowIndex="rowIndex">
+                <tr [pContextMenuRow]="fabric" [pContextMenuRowIndex]="rowIndex">
                   <td class="px-3 py-2">
                     <p-tableCheckbox [value]="fabric" />
                   </td>

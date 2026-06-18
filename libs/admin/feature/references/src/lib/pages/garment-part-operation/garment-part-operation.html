@@ -77,10 +77,15 @@
           } @else {
             <p-table
               [value]="store.garmentPartOperations.value()"
+              [contextMenu]="garmentPartOperationContextMenu"
+              [(contextMenuSelection)]="activeGarmentPartOperation"
+              contextMenuSelectionMode="separate"
               [(selection)]="store.selectedGarmentPartOperations"
               dataKey="id"
               selectionMode="multiple"
               class="p-datatable-sm text-sm"
+              [scrollable]="true"
+              scrollHeight="calc(100vh - 22rem)"
               [tableStyle]="{ 'min-width': '56rem' }"
               stripedRows
               rowHover
@@ -97,8 +102,8 @@
                 </tr>
               </ng-template>
 
-              <ng-template #body let-operation>
-                <tr (contextmenu)="openGarmentPartOperationContextMenu($event, operation)">
+              <ng-template #body let-operation let-rowIndex="rowIndex">
+                <tr [pContextMenuRow]="operation" [pContextMenuRowIndex]="rowIndex">
                   <td class="px-3 py-2">
                     <p-tableCheckbox [value]="operation" />
                   </td>
@@ -165,10 +170,15 @@
           } @else {
             <p-table
               [value]="store.garmentParts.value()"
+              [contextMenu]="garmentPartContextMenu"
+              [(contextMenuSelection)]="activeGarmentPart"
+              contextMenuSelectionMode="separate"
               [(selection)]="store.selectedGarmentParts"
               dataKey="id"
               selectionMode="multiple"
               class="p-datatable-sm text-sm"
+              [scrollable]="true"
+              scrollHeight="calc(100vh - 22rem)"
               [tableStyle]="{ 'min-width': '40rem' }"
               stripedRows
               rowHover
@@ -183,8 +193,8 @@
                 </tr>
               </ng-template>
 
-              <ng-template #body let-garmentPart>
-                <tr (contextmenu)="openGarmentPartContextMenu($event, garmentPart)">
+              <ng-template #body let-garmentPart let-rowIndex="rowIndex">
+                <tr [pContextMenuRow]="garmentPart" [pContextMenuRowIndex]="rowIndex">
                   <td class="px-3 py-2">
                     <p-tableCheckbox [value]="garmentPart" />
                   </td>

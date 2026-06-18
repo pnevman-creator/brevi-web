@@ -90,19 +90,4 @@ export class GarmentAccessory {
 
   protected activeGarmentAccessory: GarmentAccessoryRow | null = null;
   protected activeFabric: FabricRow | null = null;
-
-  protected openGarmentAccessoryContextMenu(
-    event: MouseEvent,
-    accessory: GarmentAccessoryRow,
-  ): void {
-    event.preventDefault();
-    this.activeGarmentAccessory = accessory;
-    this.garmentAccessoryContextMenu?.show(event);
-  }
-
-  protected openFabricContextMenu(event: MouseEvent, fabric: FabricRow): void {
-    event.preventDefault();
-    this.activeFabric = fabric;
-    this.fabricContextMenu?.show(event);
-  }
 }

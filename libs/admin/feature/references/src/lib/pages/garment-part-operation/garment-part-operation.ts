@@ -90,19 +90,4 @@ export class GarmentPartOperation {
 
   protected activeGarmentPartOperation: GarmentPartOperationRow | null = null;
   protected activeGarmentPart: GarmentPartRow | null = null;
-
-  protected openGarmentPartOperationContextMenu(
-    event: MouseEvent,
-    operation: GarmentPartOperationRow,
-  ): void {
-    event.preventDefault();
-    this.activeGarmentPartOperation = operation;
-    this.garmentPartOperationContextMenu?.show(event);
-  }
-
-  protected openGarmentPartContextMenu(event: MouseEvent, garmentPart: GarmentPartRow): void {
-    event.preventDefault();
-    this.activeGarmentPart = garmentPart;
-    this.garmentPartContextMenu?.show(event);
-  }
 }

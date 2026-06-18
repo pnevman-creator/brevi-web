@@ -44,13 +44,4 @@ export class AdditionalReference {
       maximumFractionDigits: 2,
     }).format(value);
   }
-
-  protected openAdditionalReferenceContextMenu(
-    event: MouseEvent,
-    item: AdditionalReferenceRow,
-  ): void {
-    event.preventDefault();
-    this.activeAdditionalReference = item;
-    this.additionalReferenceContextMenu?.show(event);
-  }
 }
