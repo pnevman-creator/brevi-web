@@ -56,10 +56,4 @@ export class Supplier {
   ];
 
   protected activeSupplier: SupplierRow | null = null;
-
-  protected openSupplierContextMenu(event: MouseEvent, supplier: SupplierRow): void {
-    event.preventDefault();
-    this.activeSupplier = supplier;
-    this.supplierContextMenu?.show(event);
-  }
 }

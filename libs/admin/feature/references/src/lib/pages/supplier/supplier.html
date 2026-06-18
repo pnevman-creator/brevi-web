@@ -44,11 +44,16 @@
     } @else {
       <p-table
         [value]="store.suppliers.value()"
+        [contextMenu]="supplierContextMenu"
+        [(contextMenuSelection)]="activeSupplier"
+        contextMenuSelectionMode="separate"
         [(selection)]="store.selectedSuppliers"
         dataKey="id"
         selectionMode="multiple"
         class="p-datatable-sm text-sm"
-        [tableStyle]="{ 'min-width': '64rem' }"
+        [scrollable]="true"
+        scrollHeight="calc(100vh - 18rem)"
+        [tableStyle]="{ 'min-width': '72rem' }"
         stripedRows
         rowHover
       >
@@ -57,16 +62,17 @@
             <th class="w-12 px-3 py-2">
               <p-tableHeaderCheckbox />
             </th>
-            <th class="w-20 px-3 py-2">ID</th>
+            <th class="px-3 py-2">ID</th>
             <th class="px-3 py-2">Назва</th>
             <th class="px-3 py-2">Посилання</th>
             <th class="px-3 py-2">Контактна особа</th>
             <th class="px-3 py-2">Телефон</th>
+            <th class="px-3 py-2">Заметки</th>
           </tr>
         </ng-template>
 
-        <ng-template #body let-supplier>
-          <tr (contextmenu)="openSupplierContextMenu($event, supplier)">
+        <ng-template #body let-supplier let-rowIndex="rowIndex">
+          <tr [pContextMenuRow]="supplier" [pContextMenuRowIndex]="rowIndex">
             <td class="px-3 py-2">
               <p-tableCheckbox [value]="supplier" />
             </td>
@@ -77,12 +83,13 @@
             <td class="px-3 py-2">{{ supplier.link || '-' }}</td>
             <td class="px-3 py-2">{{ supplier.contactPerson || '-' }}</td>
             <td class="px-3 py-2">{{ supplier.phoneNumber || '-' }}</td>
+            <td class="px-3 py-2">{{ supplier.notes || '-' }}</td>
           </tr>
         </ng-template>
 
         <ng-template #emptymessage>
           <tr>
-            <td colspan="6" class="px-6 py-10 text-center text-sm text-surface-500">
+            <td colspan="7" class="px-6 py-10 text-center text-sm text-surface-500">
               Дані не знайдено.
             </td>
           </tr>
