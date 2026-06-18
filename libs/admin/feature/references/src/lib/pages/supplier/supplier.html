@@ -1,13 +1,14 @@
-<section class="flex flex-col gap-6 p-6 md:p-8">
+<section class="flex flex-col p-6 md:p-8">
   <p-toast />
   <p-confirmDialog />
+  <p-contextMenu #supplierContextMenu [model]="supplierMenuItems" appendTo="body"></p-contextMenu>
 
   <header class="flex flex-col gap-1">
     <p class="text-sm font-medium text-surface-500 dark:text-surface-400">Довідники</p>
     <h1 class="text-2xl font-semibold text-surface-900 dark:text-surface-0">Постачальники</h1>
   </header>
 
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-4 mt-6">
     <div
       class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-surface-200 bg-surface-50 px-4 py-3 dark:border-surface-200 dark:bg-surface-50"
     >
@@ -61,12 +62,11 @@
             <th class="px-3 py-2">Посилання</th>
             <th class="px-3 py-2">Контактна особа</th>
             <th class="px-3 py-2">Телефон</th>
-            <th class="w-28 px-3 py-2"></th>
           </tr>
         </ng-template>
 
         <ng-template #body let-supplier>
-          <tr>
+          <tr (contextmenu)="openSupplierContextMenu($event, supplier)">
             <td class="px-3 py-2">
               <p-tableCheckbox [value]="supplier" />
             </td>
@@ -77,38 +77,12 @@
             <td class="px-3 py-2">{{ supplier.link || '-' }}</td>
             <td class="px-3 py-2">{{ supplier.contactPerson || '-' }}</td>
             <td class="px-3 py-2">{{ supplier.phoneNumber || '-' }}</td>
-            <td class="px-3 py-2">
-              <div class="flex items-center justify-end gap-2">
-                <button
-                  pButton
-                  type="button"
-                  text
-                  rounded
-                  severity="secondary"
-                  size="small"
-                  (click)="store.openSupplierEditDialog(supplier)"
-                >
-                  <i pButtonIcon class="pi pi-pencil"></i>
-                </button>
-                <button
-                  pButton
-                  type="button"
-                  text
-                  rounded
-                  severity="secondary"
-                  size="small"
-                  (click)="store.confirmDeleteSuppliers([supplier])"
-                >
-                  <i pButtonIcon class="pi pi-trash"></i>
-                </button>
-              </div>
-            </td>
           </tr>
         </ng-template>
 
         <ng-template #emptymessage>
           <tr>
-            <td colspan="7" class="px-6 py-10 text-center text-sm text-surface-500">
+            <td colspan="6" class="px-6 py-10 text-center text-sm text-surface-500">
               Дані не знайдено.
             </td>
           </tr>
