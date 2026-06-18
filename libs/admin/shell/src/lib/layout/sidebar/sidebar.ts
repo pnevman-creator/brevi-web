@@ -222,6 +222,13 @@ export class Sidebar {
             command: () => this.schedulePersistState(),
           },
           {
+            key: 'garment-part-operations',
+            label: 'Операції',
+            icon: 'pi pi-cog',
+            routerLink: '/references/garment-part-operation',
+            command: () => this.schedulePersistState(),
+          },
+          {
             key: 'suppliers-page',
             label: 'Постачальники',
             icon: 'pi pi-truck',
@@ -238,6 +245,7 @@ export class Sidebar {
             key: 'additional-references',
             label: 'Додаткові довідники',
             icon: 'pi pi-list',
+            routerLink: '/references/additional-reference',
             command: () => this.schedulePersistState(),
           },
         ],
