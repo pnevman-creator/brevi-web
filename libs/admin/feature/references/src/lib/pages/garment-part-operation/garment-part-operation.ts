@@ -4,31 +4,34 @@ import { ConfirmationService, MenuItem, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
-import { DynamicDialogModule, DialogService } from 'primeng/dynamicdialog';
 import { TableModule } from 'primeng/table';
 import { TabsModule } from 'primeng/tabs';
 import { ToastModule } from 'primeng/toast';
 
 import { GarmentPartOperationPageStore } from './garment-part-operation-page.store';
+import { GarmentPartDialogComponent } from '../../dialogs/garment-part-dialog/garment-part-dialog.component';
+import { GarmentPartOperationDialogComponent } from '../../dialogs/garment-part-operation-dialog/garment-part-operation-dialog.component';
 
 import type { GarmentPartOperationRow } from '../../data-access/garment-part-operations/garment-part-operations.models';
 import type { GarmentPartRow } from '../../data-access/garment-parts/garment-parts.models';
 
 @Component({
   selector: 'lib-garment-part-operation',
+  standalone: true,
   imports: [
     ButtonModule,
     ConfirmDialogModule,
     ContextMenuModule,
     DecimalPipe,
-    DynamicDialogModule,
+    GarmentPartDialogComponent,
+    GarmentPartOperationDialogComponent,
     TableModule,
     TabsModule,
     ToastModule,
   ],
   templateUrl: './garment-part-operation.html',
   styleUrl: './garment-part-operation.css',
-  providers: [ConfirmationService, DialogService, GarmentPartOperationPageStore, MessageService],
+  providers: [ConfirmationService, GarmentPartOperationPageStore, MessageService],
 })
 export class GarmentPartOperation {
   @ViewChild('garmentPartOperationContextMenu')
@@ -39,6 +42,17 @@ export class GarmentPartOperation {
 
   protected readonly store = inject(GarmentPartOperationPageStore);
   protected readonly garmentPartOperationMenuItems: MenuItem[] = [
+    {
+      label: 'Переглянути',
+      icon: 'pi pi-eye',
+      command: () => {
+        if (!this.activeGarmentPartOperation) {
+          return;
+        }
+
+        this.store.openGarmentPartOperationViewDialog(this.activeGarmentPartOperation);
+      },
+    },
     {
       label: 'Редагувати',
       icon: 'pi pi-pencil',
@@ -64,6 +78,17 @@ export class GarmentPartOperation {
   ];
 
   protected readonly garmentPartMenuItems: MenuItem[] = [
+    {
+      label: 'Переглянути',
+      icon: 'pi pi-eye',
+      command: () => {
+        if (!this.activeGarmentPart) {
+          return;
+        }
+
+        this.store.openGarmentPartViewDialog(this.activeGarmentPart);
+      },
+    },
     {
       label: 'Редагувати',
       icon: 'pi pi-pencil',

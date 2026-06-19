@@ -1,43 +1,82 @@
-import { Component, inject } from '@angular/core';
+import { Component, effect, input, model, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DrawerModule } from 'primeng/drawer';
 import { InputTextModule } from 'primeng/inputtext';
 
-import type { GarmentPartDialogData, GarmentPartDialogResult } from '../reference-dialog.models';
+import type { GarmentPartDialogDraft } from '../reference-dialog.models';
+
+type DialogMode = 'create' | 'edit' | 'view';
+
+const EMPTY_GARMENT_PART_DRAFT: GarmentPartDialogDraft = {
+  id: 0,
+  name: '',
+};
 
 @Component({
   selector: 'lib-garment-part-dialog',
-  imports: [ButtonModule, FormsModule, InputTextModule],
+  standalone: true,
+  imports: [ButtonModule, DrawerModule, FormsModule, InputTextModule],
   templateUrl: './garment-part-dialog.component.html',
 })
 export class GarmentPartDialogComponent {
-  private readonly ref = inject(DynamicDialogRef);
-  protected readonly config = inject(DynamicDialogConfig) as DynamicDialogConfig & {
-    data: GarmentPartDialogData;
-  };
+  protected readonly emptyValue = '—';
+  protected draftState: GarmentPartDialogDraft = { ...EMPTY_GARMENT_PART_DRAFT };
 
-  protected draft = { ...this.config.data.draft };
-  protected readonly isEditMode = this.config.data.mode === 'edit';
+  readonly visible = model(false);
+  readonly mode = model<DialogMode>('create');
+  readonly draft = input<GarmentPartDialogDraft>(EMPTY_GARMENT_PART_DRAFT);
+  readonly save = output<GarmentPartDialogDraft>();
+
+  constructor() {
+    effect(() => {
+      this.draftState = { ...this.draft() };
+    });
+  }
+
+  protected get isViewMode(): boolean {
+    return this.mode() === 'view';
+  }
 
   protected get canSave(): boolean {
-    return Boolean(Number.isFinite(this.draft.id) && this.draft.id > 0 && this.draft.name.trim());
+    return Boolean(
+      Number.isFinite(this.draftState.id) && this.draftState.id > 0 && this.draftState.name.trim(),
+    );
   }
 
-  protected cancel(): void {
-    this.ref.close(null);
+  protected get header(): string {
+    if (this.mode() === 'view') {
+      return 'Перегляд деталі';
+    }
+
+    if (this.mode() === 'edit') {
+      return 'Редагування деталі';
+    }
+
+    return 'Нова деталь';
   }
 
-  protected save(): void {
+  protected get title(): string {
+    return this.draftState.name.trim() || 'Деталь';
+  }
+
+  protected get initials(): string {
+    return this.title.charAt(0).toUpperCase();
+  }
+
+  protected close(): void {
+    this.visible.set(false);
+  }
+
+  protected enableEditing(): void {
+    this.mode.set('edit');
+  }
+
+  protected submit(): void {
     if (!this.canSave) {
       return;
     }
 
-    const result: GarmentPartDialogResult = {
-      originalId: this.isEditMode ? this.config.data.draft.id : null,
-      draft: { ...this.draft },
-    };
-
-    this.ref.close(result);
+    this.save.emit({ ...this.draftState });
   }
 }

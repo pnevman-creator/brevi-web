@@ -1,55 +1,101 @@
-import { Component, inject } from '@angular/core';
+import { Component, effect, input, model, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DrawerModule } from 'primeng/drawer';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 
-import type {
-  GarmentPartOperationDialogData,
-  GarmentPartOperationDialogResult,
-} from '../reference-dialog.models';
+import type { GarmentPartRow } from '../../data-access/garment-parts/garment-parts.models';
+import type { GarmentPartOperationDialogDraft } from '../reference-dialog.models';
+
+type DialogMode = 'create' | 'edit' | 'view';
+
+const EMPTY_GARMENT_PART_OPERATION_DRAFT: GarmentPartOperationDialogDraft = {
+  id: 0,
+  garmentPartName: '',
+  name: '',
+  min: null,
+};
 
 @Component({
   selector: 'lib-garment-part-operation-dialog',
-  imports: [ButtonModule, FormsModule, InputTextModule, SelectModule],
+  standalone: true,
+  imports: [ButtonModule, DrawerModule, FormsModule, InputTextModule, SelectModule],
   templateUrl: './garment-part-operation-dialog.component.html',
 })
 export class GarmentPartOperationDialogComponent {
-  private readonly ref = inject(DynamicDialogRef);
-  protected readonly config = inject(DynamicDialogConfig) as DynamicDialogConfig & {
-    data: GarmentPartOperationDialogData;
-  };
+  protected readonly emptyValue = '—';
+  protected draftState: GarmentPartOperationDialogDraft = { ...EMPTY_GARMENT_PART_OPERATION_DRAFT };
 
-  protected draft = { ...this.config.data.draft };
-  protected readonly isEditMode = this.config.data.mode === 'edit';
+  readonly visible = model(false);
+  readonly mode = model<DialogMode>('create');
+  readonly draft = input<GarmentPartOperationDialogDraft>(EMPTY_GARMENT_PART_OPERATION_DRAFT);
+  readonly garmentParts = input<GarmentPartRow[]>([]);
+  readonly save = output<GarmentPartOperationDialogDraft>();
+
+  constructor() {
+    effect(() => {
+      this.draftState = { ...this.draft() };
+    });
+  }
+
+  protected get isViewMode(): boolean {
+    return this.mode() === 'view';
+  }
 
   protected get canSave(): boolean {
     return Boolean(
-      Number.isFinite(this.draft.id) &&
-      this.draft.id > 0 &&
-      this.draft.garmentPartName.trim() &&
-      this.draft.name.trim() &&
-      this.draft.min !== null &&
-      this.draft.min !== undefined &&
-      Number.isFinite(this.draft.min),
+      Number.isFinite(this.draftState.id) &&
+      this.draftState.id > 0 &&
+      this.draftState.garmentPartName.trim() &&
+      this.draftState.name.trim() &&
+      this.draftState.min !== null &&
+      this.draftState.min !== undefined &&
+      Number.isFinite(this.draftState.min),
     );
   }
 
-  protected cancel(): void {
-    this.ref.close(null);
+  protected get header(): string {
+    if (this.mode() === 'view') {
+      return 'Перегляд роботи';
+    }
+
+    if (this.mode() === 'edit') {
+      return 'Редагування роботи';
+    }
+
+    return 'Нова робота';
   }
 
-  protected save(): void {
+  protected get title(): string {
+    return this.draftState.name.trim() || 'Робота';
+  }
+
+  protected get initials(): string {
+    return this.title.charAt(0).toUpperCase();
+  }
+
+  protected get selectedGarmentPartName(): string {
+    return (
+      this.garmentParts().find((item) => item.name === this.draftState.garmentPartName)?.name ??
+      this.draftState.garmentPartName.trim() ??
+      this.emptyValue
+    );
+  }
+
+  protected close(): void {
+    this.visible.set(false);
+  }
+
+  protected enableEditing(): void {
+    this.mode.set('edit');
+  }
+
+  protected submit(): void {
     if (!this.canSave) {
       return;
     }
 
-    const result: GarmentPartOperationDialogResult = {
-      originalId: this.isEditMode ? this.config.data.draft.id : null,
-      draft: { ...this.draft },
-    };
-
-    this.ref.close(result);
+    this.save.emit({ ...this.draftState });
   }
 }

@@ -218,4 +218,19 @@
       </p-tabpanel>
     </p-tabpanels>
   </p-tabs>
+
+  <lib-garment-part-dialog
+    [(visible)]="store.garmentPartDrawerVisible"
+    [(mode)]="store.garmentPartDrawerMode"
+    [draft]="store.garmentPartDrawerDraft"
+    (save)="store.saveGarmentPartDraft($event)"
+  />
+
+  <lib-garment-part-operation-dialog
+    [(visible)]="store.garmentPartOperationDrawerVisible"
+    [(mode)]="store.garmentPartOperationDrawerMode"
+    [draft]="store.garmentPartOperationDrawerDraft"
+    [garmentParts]="store.garmentParts.value()"
+    (save)="store.saveGarmentPartOperationDraft($event)"
+  />
 </section>

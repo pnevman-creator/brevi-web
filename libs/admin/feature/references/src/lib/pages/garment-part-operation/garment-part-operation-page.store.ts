@@ -2,30 +2,24 @@ import { DOCUMENT } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { DialogService } from 'primeng/dynamicdialog';
 import { firstValueFrom } from 'rxjs';
 
 import { GarmentPartOperationsApi } from '../../data-access/garment-part-operations/garment-part-operations.api';
 import { GarmentPartsApi } from '../../data-access/garment-parts/garment-parts.api';
-import { GarmentPartDialogComponent } from '../../dialogs/garment-part-dialog/garment-part-dialog.component';
-import { GarmentPartOperationDialogComponent } from '../../dialogs/garment-part-operation-dialog/garment-part-operation-dialog.component';
 
 import type { GarmentPartOperationRow } from '../../data-access/garment-part-operations/garment-part-operations.models';
 import type { GarmentPartRow } from '../../data-access/garment-parts/garment-parts.models';
 import type {
-  GarmentPartDialogData,
   GarmentPartDialogDraft,
-  GarmentPartDialogResult,
-  GarmentPartOperationDialogData,
   GarmentPartOperationDialogDraft,
-  GarmentPartOperationDialogResult,
 } from '../../dialogs/reference-dialog.models';
+
+type DialogMode = 'create' | 'edit' | 'view';
 
 @Injectable()
 export class GarmentPartOperationPageStore {
   private readonly garmentPartsApi = inject(GarmentPartsApi);
   private readonly garmentPartOperationsApi = inject(GarmentPartOperationsApi);
-  private readonly dialogService = inject(DialogService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
   private readonly document = inject(DOCUMENT);
@@ -44,75 +38,137 @@ export class GarmentPartOperationPageStore {
     },
   );
 
-  async openGarmentPartCreateDialog(): Promise<void> {
-    const draft = await this.openGarmentPartDialog({
-      mode: 'create',
-      draft: {
-        id: this.getNextId(this.garmentParts.value()),
-        name: '',
-      },
-    });
+  private _garmentPartDrawerVisible = false;
+  garmentPartDrawerMode: DialogMode = 'create';
+  garmentPartDrawerDraft: GarmentPartDialogDraft = this.createEmptyGarmentPartDraft();
+  private garmentPartDrawerOriginalId: number | null = null;
 
-    if (!draft) {
-      return;
-    }
+  private _garmentPartOperationDrawerVisible = false;
+  garmentPartOperationDrawerMode: DialogMode = 'create';
+  garmentPartOperationDrawerDraft: GarmentPartOperationDialogDraft =
+    this.createEmptyGarmentPartOperationDraft();
+  private garmentPartOperationDrawerOriginalId: number | null = null;
 
-    await this.createGarmentPart(draft.draft);
+  get garmentPartDrawerVisible(): boolean {
+    return this._garmentPartDrawerVisible;
   }
 
-  async openGarmentPartEditDialog(garmentPart: GarmentPartRow): Promise<void> {
-    const draft = await this.openGarmentPartDialog({
-      mode: 'edit',
-      draft: {
-        id: garmentPart.id,
-        name: garmentPart.name,
-      },
-    });
+  set garmentPartDrawerVisible(visible: boolean) {
+    this._garmentPartDrawerVisible = visible;
 
-    if (!draft) {
-      return;
+    if (!visible) {
+      this.garmentPartDrawerMode = 'create';
+      this.garmentPartDrawerDraft = this.createEmptyGarmentPartDraft();
+      this.garmentPartDrawerOriginalId = null;
     }
-
-    await this.updateGarmentPart(draft.originalId ?? garmentPart.id, draft.draft);
   }
 
-  async openGarmentPartOperationCreateDialog(): Promise<void> {
-    const garmentParts = this.garmentParts.value();
-    const draft = await this.openGarmentPartOperationDialog({
-      mode: 'create',
-      draft: {
-        id: this.getNextId(this.garmentPartOperations.value()),
-        garmentPartName: garmentParts[0]?.name ?? '',
-        name: '',
-        min: null,
-      },
-      garmentParts,
-    });
-
-    if (!draft) {
-      return;
-    }
-
-    await this.createGarmentPartOperation(draft.draft);
+  get garmentPartOperationDrawerVisible(): boolean {
+    return this._garmentPartOperationDrawerVisible;
   }
 
-  async openGarmentPartOperationEditDialog(operation: GarmentPartOperationRow): Promise<void> {
-    const draft = await this.openGarmentPartOperationDialog({
-      mode: 'edit',
-      draft: {
-        id: operation.id,
-        garmentPartName: operation.garmentPartName,
-        name: operation.name,
-        min: operation.min,
-      },
-      garmentParts: this.garmentParts.value(),
-    });
+  set garmentPartOperationDrawerVisible(visible: boolean) {
+    this._garmentPartOperationDrawerVisible = visible;
 
-    if (!draft) {
+    if (!visible) {
+      this.garmentPartOperationDrawerMode = 'create';
+      this.garmentPartOperationDrawerDraft = this.createEmptyGarmentPartOperationDraft();
+      this.garmentPartOperationDrawerOriginalId = null;
+    }
+  }
+
+  openGarmentPartCreateDialog(): void {
+    this.openGarmentPartDrawer('create', this.createEmptyGarmentPartDraft(), null);
+  }
+
+  openGarmentPartEditDialog(garmentPart: GarmentPartRow): void {
+    this.openGarmentPartDrawer('edit', this.toGarmentPartDraft(garmentPart), garmentPart.id);
+  }
+
+  openGarmentPartViewDialog(garmentPart: GarmentPartRow): void {
+    this.openGarmentPartDrawer('view', this.toGarmentPartDraft(garmentPart), garmentPart.id);
+  }
+
+  openGarmentPartOperationCreateDialog(): void {
+    this.openGarmentPartOperationDrawer(
+      'create',
+      this.createEmptyGarmentPartOperationDraft(),
+      null,
+    );
+  }
+
+  openGarmentPartOperationEditDialog(operation: GarmentPartOperationRow): void {
+    this.openGarmentPartOperationDrawer(
+      'edit',
+      this.toGarmentPartOperationDraft(operation),
+      operation.id,
+    );
+  }
+
+  openGarmentPartOperationViewDialog(operation: GarmentPartOperationRow): void {
+    this.openGarmentPartOperationDrawer(
+      'view',
+      this.toGarmentPartOperationDraft(operation),
+      operation.id,
+    );
+  }
+
+  closeGarmentPartDrawer(): void {
+    this.garmentPartDrawerVisible = false;
+  }
+
+  closeGarmentPartOperationDrawer(): void {
+    this.garmentPartOperationDrawerVisible = false;
+  }
+
+  async saveGarmentPartDraft(draft: GarmentPartDialogDraft): Promise<void> {
+    if (this.garmentPartDrawerMode === 'view') {
       return;
     }
 
-    await this.updateGarmentPartOperation(draft.originalId ?? operation.id, draft.draft);
+    if (this.garmentPartDrawerMode === 'create') {
+      const created = await this.createGarmentPart(draft);
+
+      if (created) {
+        this.closeGarmentPartDrawer();
+      }
+
+      return;
+    }
+
+    const updated = await this.updateGarmentPart(
+      this.garmentPartDrawerOriginalId ?? draft.id,
+      draft,
+    );
+
+    if (updated) {
+      this.closeGarmentPartDrawer();
+    }
+  }
+
+  async saveGarmentPartOperationDraft(draft: GarmentPartOperationDialogDraft): Promise<void> {
+    if (this.garmentPartOperationDrawerMode === 'view') {
+      return;
+    }
+
+    if (this.garmentPartOperationDrawerMode === 'create') {
+      const created = await this.createGarmentPartOperation(draft);
+
+      if (created) {
+        this.closeGarmentPartOperationDrawer();
+      }
+
+      return;
+    }
+
+    const updated = await this.updateGarmentPartOperation(
+      this.garmentPartOperationDrawerOriginalId ?? draft.id,
+      draft,
+    );
+
+    if (updated) {
+      this.closeGarmentPartOperationDrawer();
+    }
   }
 
   confirmDeleteGarmentParts(garmentParts: GarmentPartRow[]): void {
@@ -151,46 +207,14 @@ export class GarmentPartOperationPageStore {
     });
   }
 
-  private openGarmentPartDialog(
-    data: GarmentPartDialogData,
-  ): Promise<GarmentPartDialogResult | null> {
-    const ref = this.dialogService.open(GarmentPartDialogComponent, {
-      data,
-      header: data.mode === 'create' ? 'Нова деталь' : 'Редагування деталі',
-      modal: true,
-      draggable: false,
-      resizable: false,
-      width: '28rem',
-      breakpoints: { '1199px': '75vw', '575px': '90vw' },
-    })!;
-
-    return firstValueFrom(ref.onClose);
-  }
-
-  private openGarmentPartOperationDialog(
-    data: GarmentPartOperationDialogData,
-  ): Promise<GarmentPartOperationDialogResult | null> {
-    const ref = this.dialogService.open(GarmentPartOperationDialogComponent, {
-      data,
-      header: data.mode === 'create' ? 'Нова робота' : 'Редагування роботи',
-      modal: true,
-      draggable: false,
-      resizable: false,
-      width: '34rem',
-      breakpoints: { '1199px': '75vw', '575px': '90vw' },
-    })!;
-
-    return firstValueFrom(ref.onClose);
-  }
-
-  private async createGarmentPart(draft: GarmentPartDialogDraft): Promise<void> {
+  private async createGarmentPart(draft: GarmentPartDialogDraft): Promise<boolean> {
     if (!Number.isFinite(draft.id) || draft.id <= 0 || !draft.name.trim()) {
       this.messageService.add({
         severity: 'error',
         summary: 'Помилка збереження',
         detail: 'Заповніть усі поля деталі перед збереженням.',
       });
-      return;
+      return false;
     }
 
     try {
@@ -207,23 +231,25 @@ export class GarmentPartOperationPageStore {
         summary: 'Збережено',
         detail: `Деталь №${draft.id} створено.`,
       });
+      return true;
     } catch {
       this.messageService.add({
         severity: 'error',
         summary: 'Помилка збереження',
         detail: 'Деталь не створено.',
       });
+      return false;
     }
   }
 
-  private async updateGarmentPart(id: number, draft: GarmentPartDialogDraft): Promise<void> {
+  private async updateGarmentPart(id: number, draft: GarmentPartDialogDraft): Promise<boolean> {
     if (!Number.isFinite(id) || id <= 0 || !draft.name.trim()) {
       this.messageService.add({
         severity: 'error',
         summary: 'Помилка збереження',
         detail: 'Заповніть усі поля деталі перед збереженням.',
       });
-      return;
+      return false;
     }
 
     try {
@@ -235,16 +261,20 @@ export class GarmentPartOperationPageStore {
         summary: 'Збережено',
         detail: `Деталь №${id} оновлено.`,
       });
+      return true;
     } catch {
       this.messageService.add({
         severity: 'error',
         summary: 'Помилка збереження',
         detail: `Деталь №${id} не збережено.`,
       });
+      return false;
     }
   }
 
-  private async createGarmentPartOperation(draft: GarmentPartOperationDialogDraft): Promise<void> {
+  private async createGarmentPartOperation(
+    draft: GarmentPartOperationDialogDraft,
+  ): Promise<boolean> {
     if (
       !Number.isFinite(draft.id) ||
       draft.id <= 0 ||
@@ -258,7 +288,7 @@ export class GarmentPartOperationPageStore {
         summary: 'Помилка збереження',
         detail: 'Заповніть усі поля роботи перед збереженням.',
       });
-      return;
+      return false;
     }
 
     try {
@@ -277,19 +307,21 @@ export class GarmentPartOperationPageStore {
         summary: 'Збережено',
         detail: `Роботу №${draft.id} створено.`,
       });
+      return true;
     } catch {
       this.messageService.add({
         severity: 'error',
         summary: 'Помилка збереження',
         detail: 'Роботу не створено.',
       });
+      return false;
     }
   }
 
   private async updateGarmentPartOperation(
     id: number,
     draft: GarmentPartOperationDialogDraft,
-  ): Promise<void> {
+  ): Promise<boolean> {
     if (
       !Number.isFinite(id) ||
       id <= 0 ||
@@ -303,7 +335,7 @@ export class GarmentPartOperationPageStore {
         summary: 'Помилка збереження',
         detail: 'Заповніть усі поля роботи перед збереженням.',
       });
-      return;
+      return false;
     }
 
     try {
@@ -321,12 +353,14 @@ export class GarmentPartOperationPageStore {
         summary: 'Збережено',
         detail: `Роботу №${id} оновлено.`,
       });
+      return true;
     } catch {
       this.messageService.add({
         severity: 'error',
         summary: 'Помилка збереження',
         detail: `Роботу №${id} не збережено.`,
       });
+      return false;
     }
   }
 
@@ -368,6 +402,42 @@ export class GarmentPartOperationPageStore {
     });
   }
 
+  private createEmptyGarmentPartDraft(): GarmentPartDialogDraft {
+    return {
+      id: this.getNextId(this.garmentParts.value()),
+      name: '',
+    };
+  }
+
+  private createEmptyGarmentPartOperationDraft(): GarmentPartOperationDialogDraft {
+    const garmentParts = this.garmentParts.value();
+
+    return {
+      id: this.getNextId(this.garmentPartOperations.value()),
+      garmentPartName: garmentParts[0]?.name ?? '',
+      name: '',
+      min: null,
+    };
+  }
+
+  private toGarmentPartDraft(garmentPart: GarmentPartRow): GarmentPartDialogDraft {
+    return {
+      id: garmentPart.id,
+      name: garmentPart.name,
+    };
+  }
+
+  private toGarmentPartOperationDraft(
+    operation: GarmentPartOperationRow,
+  ): GarmentPartOperationDialogDraft {
+    return {
+      id: operation.id,
+      garmentPartName: operation.garmentPartName,
+      name: operation.name,
+      min: operation.min,
+    };
+  }
+
   private getNextId(items: Array<{ id: number }>): number {
     const maxId = items.reduce((currentMax, item) => Math.max(currentMax, item.id), 0);
 
@@ -396,6 +466,28 @@ export class GarmentPartOperationPageStore {
     }
 
     return 'позицій';
+  }
+
+  private openGarmentPartDrawer(
+    mode: DialogMode,
+    draft: GarmentPartDialogDraft,
+    originalId: number | null,
+  ): void {
+    this.garmentPartDrawerMode = mode;
+    this.garmentPartDrawerDraft = draft;
+    this.garmentPartDrawerOriginalId = originalId;
+    this.garmentPartDrawerVisible = true;
+  }
+
+  private openGarmentPartOperationDrawer(
+    mode: DialogMode,
+    draft: GarmentPartOperationDialogDraft,
+    originalId: number | null,
+  ): void {
+    this.garmentPartOperationDrawerMode = mode;
+    this.garmentPartOperationDrawerDraft = draft;
+    this.garmentPartOperationDrawerOriginalId = originalId;
+    this.garmentPartOperationDrawerVisible = true;
   }
 
   private reloadGarmentPartsPreservingScroll(): void {
