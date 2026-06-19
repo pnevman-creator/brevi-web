@@ -2,31 +2,25 @@ import { DOCUMENT } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { DialogService } from 'primeng/dynamicdialog';
 import { firstValueFrom } from 'rxjs';
 
 import { FabricsApi } from '../../data-access/fabrics/fabrics.api';
 import { GarmentAccessoriesApi } from '../../data-access/garment-accessories/garment-accessories.api';
-import { FabricDialogComponent } from '../../dialogs/fabric-dialog/fabric-dialog.component';
-import { GarmentAccessoryDialogComponent } from '../../dialogs/garment-accessory-dialog/garment-accessory-dialog.component';
 
 import type { FabricRow } from '../../data-access/fabrics/fabrics.models';
 import type { GarmentAccessoryRow } from '../../data-access/garment-accessories/garment-accessories.models';
 import type { SupplierRow } from '../../data-access/suppliers/suppliers.models';
 import type {
-  FabricDialogData,
   FabricDialogDraft,
-  FabricDialogResult,
-  GarmentAccessoryDialogData,
   GarmentAccessoryDialogDraft,
-  GarmentAccessoryDialogResult,
 } from '../../dialogs/reference-dialog.models';
+
+type DialogMode = 'create' | 'edit' | 'view';
 
 @Injectable()
 export class GarmentAccessoryPageStore {
   private readonly fabricsApi = inject(FabricsApi);
   private readonly garmentAccessoriesApi = inject(GarmentAccessoriesApi);
-  private readonly dialogService = inject(DialogService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
   private readonly document = inject(DOCUMENT);
@@ -49,110 +43,122 @@ export class GarmentAccessoryPageStore {
     defaultValue: [],
   });
 
-  async openFabricCreateDialog(): Promise<void> {
-    const draft = await this.openFabricDialog({
-      mode: 'create',
-      draft: {
-        id: this.getNextFabricId(),
-        name: '',
-        price: null,
-        providerName: '',
-      },
-      suppliers: this.suppliers.value(),
-    });
+  private _fabricDrawerVisible = false;
+  fabricDrawerMode: DialogMode = 'create';
+  fabricDrawerDraft: FabricDialogDraft = this.createEmptyFabricDraft();
+  private fabricDrawerOriginalId: number | null = null;
 
-    if (!draft) {
+  private _garmentAccessoryDrawerVisible = false;
+  garmentAccessoryDrawerMode: DialogMode = 'create';
+  garmentAccessoryDrawerDraft: GarmentAccessoryDialogDraft =
+    this.createEmptyGarmentAccessoryDraft();
+  private garmentAccessoryDrawerOriginalId: number | null = null;
+
+  get fabricDrawerVisible(): boolean {
+    return this._fabricDrawerVisible;
+  }
+
+  set fabricDrawerVisible(visible: boolean) {
+    this._fabricDrawerVisible = visible;
+
+    if (!visible) {
+      this.fabricDrawerMode = 'create';
+      this.fabricDrawerDraft = this.createEmptyFabricDraft();
+      this.fabricDrawerOriginalId = null;
+    }
+  }
+
+  get garmentAccessoryDrawerVisible(): boolean {
+    return this._garmentAccessoryDrawerVisible;
+  }
+
+  set garmentAccessoryDrawerVisible(visible: boolean) {
+    this._garmentAccessoryDrawerVisible = visible;
+
+    if (!visible) {
+      this.garmentAccessoryDrawerMode = 'create';
+      this.garmentAccessoryDrawerDraft = this.createEmptyGarmentAccessoryDraft();
+      this.garmentAccessoryDrawerOriginalId = null;
+    }
+  }
+
+  openFabricCreateDialog(): void {
+    this.openFabricDrawer('create', this.createEmptyFabricDraft(), null);
+  }
+
+  openFabricEditDialog(fabric: FabricRow): void {
+    this.openFabricDrawer('edit', this.toFabricDraft(fabric), fabric.id);
+  }
+
+  openFabricViewDialog(fabric: FabricRow): void {
+    this.openFabricDrawer('view', this.toFabricDraft(fabric), fabric.id);
+  }
+
+  openGarmentAccessoryCreateDialog(): void {
+    this.openGarmentAccessoryDrawer('create', this.createEmptyGarmentAccessoryDraft(), null);
+  }
+
+  openGarmentAccessoryEditDialog(accessory: GarmentAccessoryRow): void {
+    this.openGarmentAccessoryDrawer('edit', this.toGarmentAccessoryDraft(accessory), accessory.id);
+  }
+
+  openGarmentAccessoryViewDialog(accessory: GarmentAccessoryRow): void {
+    this.openGarmentAccessoryDrawer('view', this.toGarmentAccessoryDraft(accessory), accessory.id);
+  }
+
+  closeFabricDrawer(): void {
+    this.fabricDrawerVisible = false;
+  }
+
+  closeGarmentAccessoryDrawer(): void {
+    this.garmentAccessoryDrawerVisible = false;
+  }
+
+  async saveFabricDraft(draft: FabricDialogDraft): Promise<void> {
+    if (this.fabricDrawerMode === 'view') {
       return;
     }
 
-    await this.createFabric(draft.draft);
-  }
+    if (this.fabricDrawerMode === 'create') {
+      const created = await this.createFabric(draft);
 
-  async openFabricEditDialog(fabric: FabricRow): Promise<void> {
-    const draft = await this.openFabricDialog({
-      mode: 'edit',
-      draft: {
-        id: fabric.id,
-        name: fabric.name,
-        price: fabric.price,
-        providerName: fabric.providerName,
-      },
-      suppliers: this.suppliers.value(),
-    });
+      if (created) {
+        this.closeFabricDrawer();
+      }
 
-    if (!draft) {
       return;
     }
 
-    await this.updateFabric(draft.originalId ?? fabric.id, draft.draft);
+    const updated = await this.updateFabric(this.fabricDrawerOriginalId ?? draft.id, draft);
+
+    if (updated) {
+      this.closeFabricDrawer();
+    }
   }
 
-  async openGarmentAccessoryCreateDialog(): Promise<void> {
-    const draft = await this.openGarmentAccessoryDialog({
-      mode: 'create',
-      draft: {
-        id: this.getNextGarmentAccessoryId(),
-        name: '',
-        price: null,
-        supplierId: this.suppliers.value()[0]?.id ?? 0,
-      },
-      suppliers: this.suppliers.value(),
-    });
-
-    if (!draft) {
+  async saveGarmentAccessoryDraft(draft: GarmentAccessoryDialogDraft): Promise<void> {
+    if (this.garmentAccessoryDrawerMode === 'view') {
       return;
     }
 
-    await this.createGarmentAccessory(draft.draft);
-  }
+    if (this.garmentAccessoryDrawerMode === 'create') {
+      const created = await this.createGarmentAccessory(draft);
 
-  async openGarmentAccessoryEditDialog(accessory: GarmentAccessoryRow): Promise<void> {
-    const draft = await this.openGarmentAccessoryDialog({
-      mode: 'edit',
-      draft: {
-        id: accessory.id,
-        name: accessory.name,
-        price: accessory.price,
-        supplierId: accessory.supplierId,
-      },
-      suppliers: this.suppliers.value(),
-    });
+      if (created) {
+        this.closeGarmentAccessoryDrawer();
+      }
 
-    if (!draft) {
       return;
     }
 
-    await this.updateGarmentAccessory(draft.originalId ?? accessory.id, draft.draft);
-  }
+    const updated = await this.updateGarmentAccessory(
+      this.garmentAccessoryDrawerOriginalId ?? draft.id,
+      draft,
+    );
 
-  private openFabricDialog(data: FabricDialogData): Promise<FabricDialogResult | null> {
-    const ref = this.dialogService.open(FabricDialogComponent, {
-      data,
-      header: data.mode === 'create' ? 'Нова тканина' : 'Редагування тканини',
-      modal: true,
-      draggable: false,
-      resizable: false,
-      width: '36rem',
-      breakpoints: { '1199px': '75vw', '575px': '90vw' },
-    })!;
-
-    return firstValueFrom(ref.onClose);
-  }
-
-  private openGarmentAccessoryDialog(
-    data: GarmentAccessoryDialogData,
-  ): Promise<GarmentAccessoryDialogResult | null> {
-    const ref = this.dialogService.open(GarmentAccessoryDialogComponent, {
-      data,
-      header: data.mode === 'create' ? 'Нова фурнітура' : 'Редагування фурнітури',
-      modal: true,
-      draggable: false,
-      resizable: false,
-      width: '32rem',
-      breakpoints: { '1199px': '75vw', '575px': '90vw' },
-    })!;
-
-    return firstValueFrom(ref.onClose);
+    if (updated) {
+      this.closeGarmentAccessoryDrawer();
+    }
   }
 
   confirmDeleteFabrics(fabrics: FabricRow[]): void {
@@ -191,7 +197,7 @@ export class GarmentAccessoryPageStore {
     });
   }
 
-  private async createFabric(draft: FabricDialogDraft): Promise<void> {
+  private async createFabric(draft: FabricDialogDraft): Promise<boolean> {
     if (
       !Number.isFinite(draft.id) ||
       draft.id <= 0 ||
@@ -204,7 +210,7 @@ export class GarmentAccessoryPageStore {
         summary: 'Помилка збереження',
         detail: 'Заповніть усі поля тканини перед збереженням.',
       });
-      return;
+      return false;
     }
 
     try {
@@ -223,16 +229,18 @@ export class GarmentAccessoryPageStore {
         summary: 'Збережено',
         detail: `Тканину №${draft.id} створено.`,
       });
+      return true;
     } catch {
       this.messageService.add({
         severity: 'error',
         summary: 'Помилка збереження',
         detail: 'Тканину не створено.',
       });
+      return false;
     }
   }
 
-  private async updateFabric(id: number, draft: FabricDialogDraft): Promise<void> {
+  private async updateFabric(id: number, draft: FabricDialogDraft): Promise<boolean> {
     if (
       !Number.isFinite(id) ||
       id <= 0 ||
@@ -245,7 +253,7 @@ export class GarmentAccessoryPageStore {
         summary: 'Помилка збереження',
         detail: 'Заповніть усі поля тканини перед збереженням.',
       });
-      return;
+      return false;
     }
 
     try {
@@ -263,16 +271,18 @@ export class GarmentAccessoryPageStore {
         summary: 'Збережено',
         detail: `Тканину №${id} оновлено.`,
       });
+      return true;
     } catch {
       this.messageService.add({
         severity: 'error',
         summary: 'Помилка збереження',
         detail: `Тканину №${id} не збережено.`,
       });
+      return false;
     }
   }
 
-  private async createGarmentAccessory(draft: GarmentAccessoryDialogDraft): Promise<void> {
+  private async createGarmentAccessory(draft: GarmentAccessoryDialogDraft): Promise<boolean> {
     if (
       !Number.isFinite(draft.id) ||
       draft.id <= 0 ||
@@ -286,7 +296,7 @@ export class GarmentAccessoryPageStore {
         summary: 'Помилка збереження',
         detail: 'Заповніть усі поля фурнітури перед збереженням.',
       });
-      return;
+      return false;
     }
 
     try {
@@ -305,19 +315,21 @@ export class GarmentAccessoryPageStore {
         summary: 'Збережено',
         detail: `Фурнітуру №${draft.id} створено.`,
       });
+      return true;
     } catch {
       this.messageService.add({
         severity: 'error',
         summary: 'Помилка збереження',
         detail: 'Фурнітуру не створено.',
       });
+      return false;
     }
   }
 
   private async updateGarmentAccessory(
     id: number,
     draft: GarmentAccessoryDialogDraft,
-  ): Promise<void> {
+  ): Promise<boolean> {
     if (
       !Number.isFinite(id) ||
       id <= 0 ||
@@ -332,7 +344,7 @@ export class GarmentAccessoryPageStore {
         summary: 'Помилка збереження',
         detail: 'Заповніть усі поля фурнітури перед збереженням.',
       });
-      return;
+      return false;
     }
 
     try {
@@ -350,12 +362,14 @@ export class GarmentAccessoryPageStore {
         summary: 'Збережено',
         detail: `Фурнітуру №${id} оновлено.`,
       });
+      return true;
     } catch {
       this.messageService.add({
         severity: 'error',
         summary: 'Помилка збереження',
         detail: `Фурнітуру №${id} не збережено.`,
       });
+      return false;
     }
   }
 
@@ -405,6 +419,42 @@ export class GarmentAccessoryPageStore {
     return this.getNextId(this.garmentAccessories.value());
   }
 
+  private createEmptyFabricDraft(): FabricDialogDraft {
+    return {
+      id: this.getNextFabricId(),
+      name: '',
+      price: null,
+      providerName: '',
+    };
+  }
+
+  private createEmptyGarmentAccessoryDraft(): GarmentAccessoryDialogDraft {
+    return {
+      id: this.getNextGarmentAccessoryId(),
+      name: '',
+      price: null,
+      supplierId: this.suppliers.value()[0]?.id ?? 0,
+    };
+  }
+
+  private toFabricDraft(fabric: FabricRow): FabricDialogDraft {
+    return {
+      id: fabric.id,
+      name: fabric.name,
+      price: fabric.price,
+      providerName: fabric.providerName,
+    };
+  }
+
+  private toGarmentAccessoryDraft(accessory: GarmentAccessoryRow): GarmentAccessoryDialogDraft {
+    return {
+      id: accessory.id,
+      name: accessory.name,
+      price: accessory.price,
+      supplierId: accessory.supplierId,
+    };
+  }
+
   private getSupplierNameById(supplierId: number): string {
     return this.suppliers.value().find((supplier) => supplier.id === supplierId)?.name ?? '';
   }
@@ -437,6 +487,28 @@ export class GarmentAccessoryPageStore {
     }
 
     return 'позицій';
+  }
+
+  private openFabricDrawer(
+    mode: DialogMode,
+    draft: FabricDialogDraft,
+    originalId: number | null,
+  ): void {
+    this.fabricDrawerMode = mode;
+    this.fabricDrawerDraft = draft;
+    this.fabricDrawerOriginalId = originalId;
+    this.fabricDrawerVisible = true;
+  }
+
+  private openGarmentAccessoryDrawer(
+    mode: DialogMode,
+    draft: GarmentAccessoryDialogDraft,
+    originalId: number | null,
+  ): void {
+    this.garmentAccessoryDrawerMode = mode;
+    this.garmentAccessoryDrawerDraft = draft;
+    this.garmentAccessoryDrawerOriginalId = originalId;
+    this.garmentAccessoryDrawerVisible = true;
   }
 
   private reloadFabricsPreservingScroll(): void {

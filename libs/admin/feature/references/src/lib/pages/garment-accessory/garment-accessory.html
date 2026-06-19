@@ -216,4 +216,20 @@
       </p-tabpanel>
     </p-tabpanels>
   </p-tabs>
+
+  <lib-garment-accessory-dialog
+    [(visible)]="store.garmentAccessoryDrawerVisible"
+    [(mode)]="store.garmentAccessoryDrawerMode"
+    [draft]="store.garmentAccessoryDrawerDraft"
+    [suppliers]="store.suppliers.value()"
+    (save)="store.saveGarmentAccessoryDraft($event)"
+  />
+
+  <lib-fabric-dialog
+    [(visible)]="store.fabricDrawerVisible"
+    [(mode)]="store.fabricDrawerMode"
+    [draft]="store.fabricDrawerDraft"
+    [suppliers]="store.suppliers.value()"
+    (save)="store.saveFabricDraft($event)"
+  />
 </section>

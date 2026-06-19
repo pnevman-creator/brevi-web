@@ -1,50 +1,109 @@
-import { Component, inject } from '@angular/core';
+import { Component, effect, input, model, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DrawerModule } from 'primeng/drawer';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 
-import type { FabricDialogData, FabricDialogResult } from '../reference-dialog.models';
+import type { SupplierRow } from '../../data-access/suppliers/suppliers.models';
+import type { FabricDialogDraft } from '../reference-dialog.models';
+
+type DialogMode = 'create' | 'edit' | 'view';
+
+const EMPTY_FABRIC_DRAFT: FabricDialogDraft = {
+  id: 0,
+  name: '',
+  price: null,
+  providerName: '',
+};
 
 @Component({
   selector: 'lib-fabric-dialog',
-  imports: [ButtonModule, FormsModule, InputTextModule, SelectModule],
+  standalone: true,
+  imports: [ButtonModule, DrawerModule, FormsModule, InputTextModule, SelectModule],
   templateUrl: './fabric-dialog.component.html',
 })
 export class FabricDialogComponent {
-  private readonly ref = inject(DynamicDialogRef);
-  protected readonly config = inject(DynamicDialogConfig) as DynamicDialogConfig & {
-    data: FabricDialogData;
-  };
+  protected readonly emptyValue = '—';
 
-  protected draft = { ...this.config.data.draft };
-  protected readonly isEditMode = this.config.data.mode === 'edit';
+  protected draftState: FabricDialogDraft = { ...EMPTY_FABRIC_DRAFT };
+
+  readonly visible = model(false);
+  readonly mode = model<DialogMode>('create');
+  readonly draft = input<FabricDialogDraft>(EMPTY_FABRIC_DRAFT);
+  readonly suppliers = input<SupplierRow[]>([]);
+  readonly save = output<FabricDialogDraft>();
+
+  constructor() {
+    effect(() => {
+      this.draftState = { ...this.draft() };
+    });
+  }
+
+  protected get isViewMode(): boolean {
+    return this.mode() === 'view';
+  }
 
   protected get canSave(): boolean {
     return Boolean(
-      this.draft.name.trim() &&
-      this.draft.providerName.trim() &&
-      this.draft.price !== null &&
-      Number.isFinite(this.draft.id) &&
-      this.draft.id > 0,
+      this.draftState.name.trim() &&
+      this.draftState.providerName.trim() &&
+      this.draftState.price !== null &&
+      Number.isFinite(this.draftState.id) &&
+      this.draftState.id > 0,
     );
   }
 
-  protected cancel(): void {
-    this.ref.close(null);
+  protected get header(): string {
+    if (this.mode() === 'view') {
+      return 'Перегляд тканини';
+    }
+
+    if (this.mode() === 'edit') {
+      return 'Редагування тканини';
+    }
+
+    return 'Нова тканина';
   }
 
-  protected save(): void {
+  protected get fabricTitle(): string {
+    return this.draftState.name.trim() || 'Тканина';
+  }
+
+  protected get fabricInitials(): string {
+    return this.fabricTitle.charAt(0).toUpperCase();
+  }
+
+  protected get formattedPrice(): string {
+    const value = this.draftState.price ?? 0;
+
+    return `${new Intl.NumberFormat('uk-UA', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value)} грн`;
+  }
+
+  protected get selectedSupplierName(): string {
+    return (
+      this.suppliers().find((supplier) => supplier.name === this.draftState.providerName)?.name ||
+      this.draftState.providerName.trim() ||
+      this.emptyValue
+    );
+  }
+
+  protected close(): void {
+    this.visible.set(false);
+  }
+
+  protected enableEditing(): void {
+    this.mode.set('edit');
+  }
+
+  protected submit(): void {
     if (!this.canSave) {
       return;
     }
 
-    const result: FabricDialogResult = {
-      originalId: this.isEditMode ? this.config.data.draft.id : null,
-      draft: { ...this.draft },
-    };
-
-    this.ref.close(result);
+    this.save.emit({ ...this.draftState });
   }
 }
