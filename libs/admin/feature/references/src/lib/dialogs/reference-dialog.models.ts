@@ -15,6 +15,8 @@ export interface SupplierDialogData {
   draft: SupplierDialogDraft;
 }
 
+export type SupplierDialogMode = 'create' | 'edit' | 'view';
+
 export interface SupplierDialogResult {
   originalId: number | null;
   draft: SupplierDialogDraft;

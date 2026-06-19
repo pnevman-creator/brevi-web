@@ -64,10 +64,10 @@
             </th>
             <th class="px-3 py-2">ID</th>
             <th class="px-3 py-2">Назва</th>
-            <th class="px-3 py-2">Посилання</th>
-            <th class="px-3 py-2">Контактна особа</th>
             <th class="px-3 py-2">Телефон</th>
-            <th class="px-3 py-2">Заметки</th>
+            <th class="px-3 py-2">Контактна особа</th>
+            <th class="px-3 py-2">Нотатки</th>
+            <th class="px-3 py-2">Посилання</th>
           </tr>
         </ng-template>
 
@@ -80,10 +80,10 @@
               {{ supplier.id }}
             </td>
             <td class="px-3 py-2">{{ supplier.name }}</td>
-            <td class="px-3 py-2">{{ supplier.link || '-' }}</td>
-            <td class="px-3 py-2">{{ supplier.contactPerson || '-' }}</td>
             <td class="px-3 py-2">{{ supplier.phoneNumber || '-' }}</td>
+            <td class="px-3 py-2">{{ supplier.contactPerson || '-' }}</td>
             <td class="px-3 py-2">{{ supplier.notes || '-' }}</td>
+            <td class="px-3 py-2">{{ supplier.link || '-' }}</td>
           </tr>
         </ng-template>
 
@@ -97,4 +97,11 @@
       </p-table>
     }
   </div>
+
+  <lib-supplier-dialog
+    [(visible)]="store.supplierDrawerVisible"
+    [(mode)]="store.supplierDrawerMode"
+    [draft]="store.supplierDrawerDraft"
+    (save)="store.saveSupplierDraft($event)"
+  />
 </section>

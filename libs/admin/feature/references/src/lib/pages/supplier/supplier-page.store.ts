@@ -2,11 +2,9 @@ import { DOCUMENT } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { DialogService } from 'primeng/dynamicdialog';
 import { firstValueFrom } from 'rxjs';
 
 import { SuppliersApi } from '../../data-access/suppliers/suppliers.api';
-import { SupplierDialogComponent } from '../../dialogs/supplier-dialog/supplier-dialog.component';
 
 import type {
   CreateSupplierRequest,
@@ -14,63 +12,76 @@ import type {
   UpdateSupplierRequest,
 } from '../../data-access/suppliers/suppliers.models';
 import type {
-  SupplierDialogData,
   SupplierDialogDraft,
-  SupplierDialogResult,
+  SupplierDialogMode,
 } from '../../dialogs/reference-dialog.models';
 
 @Injectable()
 export class SupplierPageStore {
   private readonly suppliersApi = inject(SuppliersApi);
-  private readonly dialogService = inject(DialogService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
   private readonly document = inject(DOCUMENT);
 
   selectedSuppliers: SupplierRow[] = [];
-
   readonly suppliers = httpResource<SupplierRow[]>(() => '/api/reference/suppliers', {
     defaultValue: [],
   });
+  private _supplierDrawerVisible = false;
+  supplierDrawerMode: SupplierDialogMode = 'create';
+  supplierDrawerDraft: SupplierDialogDraft = this.createEmptySupplierDraft();
+  private supplierDrawerOriginalId: number | null = null;
 
-  async openSupplierCreateDialog(): Promise<void> {
-    const draft = await this.openSupplierDialog({
-      mode: 'create',
-      draft: this.createEmptySupplierDraft(),
-    });
+  get supplierDrawerVisible(): boolean {
+    return this._supplierDrawerVisible;
+  }
 
-    if (!draft) {
+  set supplierDrawerVisible(visible: boolean) {
+    this._supplierDrawerVisible = visible;
+
+    if (!visible) {
+      this.supplierDrawerMode = 'create';
+      this.supplierDrawerDraft = this.createEmptySupplierDraft();
+      this.supplierDrawerOriginalId = null;
+    }
+  }
+
+  openSupplierCreateDialog(): void {
+    this.openSupplierDrawer('create', this.createEmptySupplierDraft(), null);
+  }
+
+  openSupplierEditDialog(supplier: SupplierRow): void {
+    this.openSupplierDrawer('edit', this.toSupplierDraft(supplier), supplier.id);
+  }
+
+  openSupplierViewDialog(supplier: SupplierRow): void {
+    this.openSupplierDrawer('view', this.toSupplierDraft(supplier), supplier.id);
+  }
+
+  closeSupplierDrawer(): void {
+    this.supplierDrawerVisible = false;
+  }
+
+  async saveSupplierDraft(draft: SupplierDialogDraft): Promise<void> {
+    if (this.supplierDrawerMode === 'view') {
       return;
     }
 
-    await this.createSupplier(draft.draft);
-  }
+    if (this.supplierDrawerMode === 'create') {
+      const created = await this.createSupplier(draft);
 
-  async openSupplierEditDialog(supplier: SupplierRow): Promise<void> {
-    const draft = await this.openSupplierDialog({
-      mode: 'edit',
-      draft: this.toSupplierDraft(supplier),
-    });
+      if (created) {
+        this.closeSupplierDrawer();
+      }
 
-    if (!draft) {
       return;
     }
 
-    await this.updateSupplier(draft.originalId ?? supplier.id, draft.draft);
-  }
+    const updated = await this.updateSupplier(this.supplierDrawerOriginalId ?? draft.id, draft);
 
-  private openSupplierDialog(data: SupplierDialogData): Promise<SupplierDialogResult | null> {
-    const ref = this.dialogService.open(SupplierDialogComponent, {
-      data,
-      header: data.mode === 'create' ? 'Нова позиція' : 'Редагування постачальника',
-      modal: true,
-      draggable: false,
-      resizable: false,
-      width: '32rem',
-      breakpoints: { '1199px': '75vw', '575px': '90vw' },
-    })!;
-
-    return firstValueFrom(ref.onClose);
+    if (updated) {
+      this.closeSupplierDrawer();
+    }
   }
 
   confirmDeleteSuppliers(suppliers: SupplierRow[]): void {
@@ -91,14 +102,14 @@ export class SupplierPageStore {
     });
   }
 
-  private async createSupplier(draft: SupplierDialogDraft): Promise<void> {
+  private async createSupplier(draft: SupplierDialogDraft): Promise<boolean> {
     if (!Number.isFinite(draft.id) || draft.id <= 0 || !draft.name.trim()) {
       this.messageService.add({
         severity: 'error',
         summary: 'Помилка збереження',
         detail: 'Заповніть назву постачальника перед збереженням.',
       });
-      return;
+      return false;
     }
 
     try {
@@ -110,23 +121,25 @@ export class SupplierPageStore {
         summary: 'Збережено',
         detail: `Постачальника №${draft.id} створено.`,
       });
+      return true;
     } catch {
       this.messageService.add({
         severity: 'error',
         summary: 'Помилка збереження',
         detail: 'Постачальника не створено.',
       });
+      return false;
     }
   }
 
-  private async updateSupplier(id: number, draft: SupplierDialogDraft): Promise<void> {
+  private async updateSupplier(id: number, draft: SupplierDialogDraft): Promise<boolean> {
     if (!Number.isFinite(id) || id <= 0 || !draft.name.trim()) {
       this.messageService.add({
         severity: 'error',
         summary: 'Помилка збереження',
         detail: 'Заповніть назву постачальника перед збереженням.',
       });
-      return;
+      return false;
     }
 
     try {
@@ -138,12 +151,14 @@ export class SupplierPageStore {
         summary: 'Збережено',
         detail: `Постачальника №${id} оновлено.`,
       });
+      return true;
     } catch {
       this.messageService.add({
         severity: 'error',
         summary: 'Помилка збереження',
         detail: `Постачальника №${id} не збережено.`,
       });
+      return false;
     }
   }
 
@@ -239,6 +254,17 @@ export class SupplierPageStore {
     }
 
     return 'позицій';
+  }
+
+  private openSupplierDrawer(
+    mode: SupplierDialogMode,
+    draft: SupplierDialogDraft,
+    originalId: number | null,
+  ): void {
+    this.supplierDrawerMode = mode;
+    this.supplierDrawerDraft = draft;
+    this.supplierDrawerOriginalId = originalId;
+    this.supplierDrawerVisible = true;
   }
 
   private reloadSuppliersPreservingScroll(): void {
